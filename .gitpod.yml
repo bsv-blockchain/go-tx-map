@@ -1,4 +1,4 @@
-# Gitpod workspace configuration for go-template
+# Gitpod workspace configuration for go-tx-map
 # This file creates a repeatable cloud development environment.
 # It ensures dependencies are installed and the codebase is vetted
 # and tested on workspace start.

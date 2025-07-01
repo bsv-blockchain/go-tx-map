@@ -1,6 +1,6 @@
 # 🛟 Support Guide
 
-Need help with **go-template**? You're in the right place. Here’s how to get support, report issues, and stay aligned with project guidelines.
+Need help with **go-tx-map**? You're in the right place. Here’s how to get support, report issues, and stay aligned with project guidelines.
 
 <br/>
 
@@ -8,7 +8,7 @@ Need help with **go-template**? You're in the right place. Here’s how to get s
 
 Before asking, check the existing threads:
 
-* 🔍 Search [Discussions](https://github.com/bsv-blockchain/go-template/discussions)
+* 🔍 Search [Discussions](https://github.com/bsv-blockchain/go-tx-map/discussions)
 * 🆕 Can’t find what you need? Start a new topic and ask away!
 
 <br/>
@@ -17,7 +17,7 @@ Before asking, check the existing threads:
 
 Found a bug?
 
-1. Check the [issue tracker](https://github.com/bsv-blockchain/go-template/issues) to avoid duplicates.
+1. Check the [issue tracker](https://github.com/bsv-blockchain/go-tx-map/issues) to avoid duplicates.
 2. If it’s new, open an issue with:
 
 	* Clear steps to reproduce

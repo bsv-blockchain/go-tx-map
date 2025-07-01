@@ -1,10 +1,10 @@
-// Package main is an example of how to use the go-template package
+// Package main is an example of how to use the go-tx-map package
 package main
 
 import (
 	"log"
 
-	"github.com/bsv-blockchain/go-template"
+	"github.com/bsv-blockchain/go-tx-map"
 )
 
 func main() {

@@ -1,6 +1,6 @@
 {
 	// Human-readable name that shows up in both VS Code and GoLand
-	"name": "go-template dev container",
+	"name": "go-tx-map dev container",
 
 	// Official Go 1.24 Bullseye image maintained by the Dev Containers team
 	"image": "mcr.microsoft.com/devcontainers/go:0-1.24-bullseye",

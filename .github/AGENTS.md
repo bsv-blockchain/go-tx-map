@@ -18,7 +18,7 @@ Additional `AGENTS.md` files **may exist in subdirectories** to provide more con
 
 ## 🔍 Project Overview
 
-**go-template** is a production-ready scaffold for building new Go libraries with zero setup friction. 
+**go-tx-map** is a production-ready scaffold for building new Go libraries with zero setup friction. 
 It ships with opinionated defaults that reflect current best practices—clean project layout, 
 module-aware dependency management, and Makefiles that automate everything from linting and race-condition 
 testing to snapshot releases. Out of the box, GitHub Actions orchestrate CI/CD: unit tests (with `testify`), 
@@ -750,5 +750,5 @@ All contributors are expected to append entries here when making meaningful chan
 | Date       | Author   | Summary of Changes                                           |
 |------------|----------|--------------------------------------------------------------|
 | 2025-06-30 | @mrz1836 | Added pre-commit hook guidelines and config reference        |
-| 2025-06-27 | @mrz1836 | Adapted to fix this project go-template                      |
+| 2025-06-27 | @mrz1836 | Adapted to fix this project go-tx-map                      |
 > For minor edits (typos, formatting), this log update is optional. For all behavioral or structural changes, log entries are **required**.

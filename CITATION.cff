@@ -1,10 +1,10 @@
 cff-version: 1.2.0
-message: "If you find go-template useful in your software or research, please cite this project using the following citation metadata. A citation helps support future development and encourages best practices in software reuse."
-title: "go-template"
+message: "If you find go-tx-map useful in your software or research, please cite this project using the following citation metadata. A citation helps support future development and encourages best practices in software reuse."
+title: "go-tx-map"
 version: "1.0.4"
-url: "https://github.com/bsv-blockchain/go-template"
-repository: "https://github.com/bsv-blockchain/go-template"
-repository-code: "https://github.com/bsv-blockchain/go-template"
+url: "https://github.com/bsv-blockchain/go-tx-map"
+repository: "https://github.com/bsv-blockchain/go-tx-map"
+repository-code: "https://github.com/bsv-blockchain/go-tx-map"
 date-released: 2021-04-24
 license: "Apache-2.0"
 type: software
@@ -26,4 +26,4 @@ keywords:
   - test-automation
   - open-source
 
-abstract: "go-template is a production-ready starter scaffold for Go libraries that bundles opinionated project structure, module management, and fully automated CI/CD workflows. It integrates GitHub Actions, GoReleaser, comprehensive testing and linting, and security scanning so maintainers can focus on writing code instead of setup and infrastructure."
+abstract: "go-tx-map is a production-ready starter scaffold for Go libraries that bundles opinionated project structure, module management, and fully automated CI/CD workflows. It integrates GitHub Actions, GoReleaser, comprehensive testing and linting, and security scanning so maintainers can focus on writing code instead of setup and infrastructure."
