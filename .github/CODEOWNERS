@@ -1,0 +1,21 @@
+# CODEOWNERS
+# See https://docs.github.com/articles/about-codeowners for syntax and rules.
+# The most specific rule that matches takes precedence.
+
+# Default owner for the entire repository
+* @icellan
+
+# GitHub Actions workflows
+.github/workflows/* @icellan
+
+# Documentation files
+*.md @icellan
+
+# Build and makefiles
+Makefile @icellan
+.make/*.mk @icellan
+*.mk @icellan
+
+# Go module dependencies
+go.mod @icellan
+go.sum @icellan
