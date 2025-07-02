@@ -65,32 +65,32 @@ import (
 
 // TxMap is a map that stores transaction hashes and associated uint64 values.
 type TxMap interface {
+	Delete(hash chainhash.Hash) error
+	Exists(hash chainhash.Hash) bool
+	Get(hash chainhash.Hash) (uint64, bool)
+	Keys() []chainhash.Hash
+	Length() int
 	Put(hash chainhash.Hash, value uint64) error
 	PutMulti(hashes []chainhash.Hash, value uint64) error
-	Get(hash chainhash.Hash) (uint64, bool)
-	Exists(hash chainhash.Hash) bool
-	Length() int
-	Keys() []chainhash.Hash
-	Delete(hash chainhash.Hash) error
 }
 
 // Uint64 is a map that stores uint64's and associated uint64 value.
 type Uint64 interface {
-	Put(hash, value uint64) error
-	Get(hash uint64) (uint64, bool)
 	Exists(hash uint64) bool
+	Get(hash uint64) (uint64, bool)
 	Length() int
+	Put(hash, value uint64) error
 }
 
 // TxHashMap is a map that stores transaction hashes without any associated value.
 type TxHashMap interface {
+	Delete(hash chainhash.Hash) error
+	Exists(hash chainhash.Hash) bool
+	Get(hash chainhash.Hash) (uint64, bool)
+	Keys() []chainhash.Hash
+	Length() int
 	Put(hash chainhash.Hash) error
 	PutMulti(hashes []chainhash.Hash) error
-	Get(hash chainhash.Hash) (uint64, bool)
-	Exists(hash chainhash.Hash) bool
-	Length() int
-	Keys() []chainhash.Hash
-	Delete(hash chainhash.Hash) error
 }
 
 // SwissMap is a simple concurrent-safe map that uses the swiss package
@@ -103,8 +103,10 @@ type SwissMap struct {
 var (
 	// ErrHashAlreadyExists is when hash already exists
 	ErrHashAlreadyExists = errors.New("hash already exists in map")
+
 	// ErrHashDoesNotExist is when hash doesn't exist
 	ErrHashDoesNotExist = errors.New("hash does not exist in map")
+
 	// ErrBucketDoesNotExist is when a bucket doesn't exist
 	ErrBucketDoesNotExist = errors.New("bucket does not exist")
 )

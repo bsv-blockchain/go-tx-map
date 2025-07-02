@@ -14,8 +14,15 @@ type SyncedMap[K comparable, V any] struct {
 	limit int
 }
 
-// NewSyncedMap creates a new SyncedMap with an optional limit.
-// If the limit is set, the map will automatically delete a random item when the limit is reached.
+// NewSyncedMap creates and returns a new SyncedMap with an optional item limit.
+//
+// Parameters:
+//   - l (optional): An integer specifying the maximum number of items allowed in the map. If omitted or zero, the map has no limit.
+//
+// Returns:
+//   - *SyncedMap[K, V]: A pointer to a new, empty SyncedMap instance.
+//
+// If a limit is set and the map reaches its capacity, a random item will be deleted to make room for new entries.
 func NewSyncedMap[K comparable, V any](l ...int) *SyncedMap[K, V] {
 	limit := 0
 	if len(l) > 0 {
@@ -28,7 +35,10 @@ func NewSyncedMap[K comparable, V any](l ...int) *SyncedMap[K, V] {
 	}
 }
 
-// Length returns the number of key-value pairs currently stored in the map. It is safe for concurrent access.
+// Length returns the number of key-value pairs currently stored in the SyncedMap.
+//
+// Returns:
+//   - int: The number of items in the map.
 func (m *SyncedMap[K, V]) Length() int {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -36,7 +46,13 @@ func (m *SyncedMap[K, V]) Length() int {
 	return len(m.m)
 }
 
-// Exists checks if a key exists in the map
+// Exists checks if a key exists in the SyncedMap.
+//
+// Parameters:
+//   - key: The key to check for existence.
+//
+// Returns:
+//   - bool: True if the key exists, false otherwise.
 func (m *SyncedMap[K, V]) Exists(key K) bool {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -46,7 +62,14 @@ func (m *SyncedMap[K, V]) Exists(key K) bool {
 	return ok
 }
 
-// Get returns a value in the map
+// Get returns the value associated with the given key in the SyncedMap.
+//
+// Parameters:
+//   - key: The key to retrieve the value for.
+//
+// Returns:
+//   - V: The value associated with the key (zero value if not found).
+//   - bool: True if the key exists, false otherwise.
 func (m *SyncedMap[K, V]) Get(key K) (V, bool) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -56,8 +79,10 @@ func (m *SyncedMap[K, V]) Get(key K) (V, bool) {
 	return val, ok
 }
 
-// Range returns a copy of the map.
-// Note that if v is a pointer, the map value may be modified by other goroutines at the same time.
+// Range returns a copy of the SyncedMap as a standard Go map.
+//
+// Returns:
+//   - map[K]V: A copy of the map's key-value pairs.
 func (m *SyncedMap[K, V]) Range() map[K]V {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -71,7 +96,10 @@ func (m *SyncedMap[K, V]) Range() map[K]V {
 	return items
 }
 
-// Keys returns a slice of keys in the map.
+// Keys returns a slice of all keys in the SyncedMap.
+//
+// Returns:
+//   - []K: A slice containing all keys in the map.
 func (m *SyncedMap[K, V]) Keys() []K {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -85,9 +113,11 @@ func (m *SyncedMap[K, V]) Keys() []K {
 	return keys
 }
 
-// Iterate iterates over the map and calls the function f for each key-value pair.
-// unlike Range(), Iterate does not return a copy of the map and keeps the lock for the duration of the iteration.
-// If f returns false, the iteration stops.
+// Iterate calls the provided function for each key-value pair in the SyncedMap.
+// The iteration stops if the function returns false.
+//
+// Parameters:
+//   - f: A function that takes a key and value, and returns a bool indicating whether to continue iteration.
 func (m *SyncedMap[K, V]) Iterate(f func(key K, value V) bool) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -99,7 +129,11 @@ func (m *SyncedMap[K, V]) Iterate(f func(key K, value V) bool) {
 	}
 }
 
-// Set will set a key value pair in the map
+// Set sets the value for the given key in the SyncedMap.
+//
+// Parameters:
+//   - key: The key to set.
+//   - value: The value to associate with the key.
 func (m *SyncedMap[K, V]) Set(key K, value V) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -107,16 +141,15 @@ func (m *SyncedMap[K, V]) Set(key K, value V) {
 	m.setUnlocked(key, value)
 }
 
-// SetIfNotExists sets the value for the key if it does not already exist in the map.
-// It returns the existing value and false if the key already exists, or the new value and true if it was set.
+// SetIfNotExists sets the value for the key if it does not already exist in the SyncedMap.
 //
-// Params:
+// Parameters:
 //   - key: The key to set the value for.
 //   - value: The value to set for the key.
 //
 // Returns:
 //   - V: The value that was set or already existed.
-//   - bool: true if the value was set, false if the key already existed with a different value.
+//   - bool: True if the value was set, false if the key already existed.
 func (m *SyncedMap[K, V]) SetIfNotExists(key K, value V) (V, bool) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -142,7 +175,11 @@ func (m *SyncedMap[K, V]) setUnlocked(key K, value V) {
 	m.m[key] = value
 }
 
-// SetMulti will set values for multiple keys
+// SetMulti sets the given value for multiple keys in the SyncedMap.
+//
+// Parameters:
+//   - keys: A slice of keys to set.
+//   - value: The value to associate with each key.
 func (m *SyncedMap[K, V]) SetMulti(keys []K, value V) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -153,7 +190,13 @@ func (m *SyncedMap[K, V]) SetMulti(keys []K, value V) {
 	}
 }
 
-// Delete deletes a key value from the map
+// Delete removes the key and its value from the SyncedMap.
+//
+// Parameters:
+//   - key: The key to delete.
+//
+// Returns:
+//   - bool: True if the key was deleted, false otherwise.
 func (m *SyncedMap[K, V]) Delete(key K) bool {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -163,7 +206,10 @@ func (m *SyncedMap[K, V]) Delete(key K) bool {
 	return true
 }
 
-// Clear empties the map
+// Clear removes all key-value pairs from the SyncedMap.
+//
+// Returns:
+//   - bool: True if the map was cleared successfully.
 func (m *SyncedMap[K, V]) Clear() bool {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -179,7 +225,13 @@ type SyncedSlice[V any] struct {
 	items []*V
 }
 
-// NewSyncedSlice creates a new SyncedSlice.
+// NewSyncedSlice creates and returns a new SyncedSlice with an optional initial capacity.
+//
+// Parameters:
+//   - length (optional): The initial capacity of the slice. If omitted or zero, the slice has no preallocated capacity.
+//
+// Returns:
+//   - *SyncedSlice[V]: A pointer to a new, empty SyncedSlice instance.
 func NewSyncedSlice[V any](length ...int) *SyncedSlice[V] {
 	initialLength := 0
 	if len(length) > 0 {
@@ -191,7 +243,10 @@ func NewSyncedSlice[V any](length ...int) *SyncedSlice[V] {
 	}
 }
 
-// Length returns the length of the slice
+// Length returns the number of items currently stored in the SyncedSlice.
+//
+// Returns:
+//   - int: The number of items in the slice.
 func (s *SyncedSlice[V]) Length() int {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -199,7 +254,10 @@ func (s *SyncedSlice[V]) Length() int {
 	return len(s.items)
 }
 
-// Size returns the size of the slice
+// Size returns the capacity of the SyncedSlice.
+//
+// Returns:
+//   - int: The capacity of the slice.
 func (s *SyncedSlice[V]) Size() int {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -207,7 +265,14 @@ func (s *SyncedSlice[V]) Size() int {
 	return cap(s.items)
 }
 
-// Get returns an item from the slice
+// Get returns the item at the specified index in the SyncedSlice.
+//
+// Parameters:
+//   - index: The index of the item to retrieve.
+//
+// Returns:
+//   - *V: A pointer to the item at the specified index, or nil if out of range.
+//   - bool: True if the item exists at the index, false otherwise.
 func (s *SyncedSlice[V]) Get(index int) (*V, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -219,7 +284,10 @@ func (s *SyncedSlice[V]) Get(index int) (*V, bool) {
 	return s.items[index], true
 }
 
-// Append will append an item to the slice
+// Append adds an item to the end of the SyncedSlice.
+//
+// Parameters:
+//   - item: A pointer to the item to append to the slice.
 func (s *SyncedSlice[V]) Append(item *V) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -227,7 +295,11 @@ func (s *SyncedSlice[V]) Append(item *V) {
 	s.items = append(s.items, item)
 }
 
-// Pop removes and returns the last item in the slice.
+// Pop removes and returns the last item in the SyncedSlice.
+//
+// Returns:
+//   - *V: A pointer to the last item, or nil if the slice is empty.
+//   - bool: True if an item was returned, false if the slice was empty.
 func (s *SyncedSlice[V]) Pop() (*V, bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -242,7 +314,11 @@ func (s *SyncedSlice[V]) Pop() (*V, bool) {
 	return item, true
 }
 
-// Shift removes and returns the first item in the slice.
+// Shift removes and returns the first item in the SyncedSlice.
+//
+// Returns:
+//   - *V: A pointer to the first item, or nil if the slice is empty.
+//   - bool: True if an item was returned, false if the slice was empty.
 func (s *SyncedSlice[V]) Shift() (*V, bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -263,14 +339,27 @@ type SyncedSwissMap[K comparable, V any] struct {
 	swissMap *swiss.Map[K, V]
 }
 
-// NewSyncedSwissMap returns a new synced map
+// NewSyncedSwissMap creates and returns a new SyncedSwissMap with the specified initial capacity.
+//
+// Parameters:
+//   - length: The initial capacity of the underlying swiss.Map.
+//
+// Returns:
+//   - *SyncedSwissMap[K, V]: A pointer to a new, empty SyncedSwissMap instance.
 func NewSyncedSwissMap[K comparable, V any](length uint32) *SyncedSwissMap[K, V] {
 	return &SyncedSwissMap[K, V]{
 		swissMap: swiss.NewMap[K, V](length),
 	}
 }
 
-// Get returns a key value in the map
+// Get returns the value associated with the given key in the SyncedSwissMap.
+//
+// Parameters:
+//   - key: The key to retrieve the value for.
+//
+// Returns:
+//   - V: The value associated with the key (zero value if not found).
+//   - bool: True if the key exists, false otherwise.
 func (m *SyncedSwissMap[K, V]) Get(key K) (V, bool) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -278,7 +367,10 @@ func (m *SyncedSwissMap[K, V]) Get(key K) (V, bool) {
 	return m.swissMap.Get(key)
 }
 
-// Range gets the range of the map
+// Range returns a copy of the SyncedSwissMap as a standard Go map.
+//
+// Returns:
+//   - map[K]V: A copy of the map's key-value pairs.
 func (m *SyncedSwissMap[K, V]) Range() map[K]V {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -293,7 +385,11 @@ func (m *SyncedSwissMap[K, V]) Range() map[K]V {
 	return items
 }
 
-// Set sets a key value pair in the map
+// Set sets the value for the given key in the SyncedSwissMap.
+//
+// Parameters:
+//   - key: The key to set.
+//   - value: The value to associate with the key.
 func (m *SyncedSwissMap[K, V]) Set(key K, value V) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -301,7 +397,10 @@ func (m *SyncedSwissMap[K, V]) Set(key K, value V) {
 	m.swissMap.Put(key, value)
 }
 
-// Length returns the length of the map
+// Length returns the number of key-value pairs currently stored in the SyncedSwissMap.
+//
+// Returns:
+//   - int: The number of items in the map.
 func (m *SyncedSwissMap[K, V]) Length() int {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -309,7 +408,13 @@ func (m *SyncedSwissMap[K, V]) Length() int {
 	return m.swissMap.Count()
 }
 
-// Delete deletes a key value from the map
+// Delete removes the key and its value from the SyncedSwissMap.
+//
+// Parameters:
+//   - key: The key to delete.
+//
+// Returns:
+//   - bool: True if the key was deleted, false otherwise.
 func (m *SyncedSwissMap[K, V]) Delete(key K) bool {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -317,7 +422,13 @@ func (m *SyncedSwissMap[K, V]) Delete(key K) bool {
 	return m.swissMap.Delete(key)
 }
 
-// DeleteBatch batch deletes items in the map
+// DeleteBatch removes multiple keys and their values from the SyncedSwissMap.
+//
+// Parameters:
+//   - keys: A slice of keys to delete.
+//
+// Returns:
+//   - bool: True if at least one key was deleted, false otherwise.
 func (m *SyncedSwissMap[K, V]) DeleteBatch(keys []K) bool {
 	m.mu.Lock()
 	defer m.mu.Unlock()

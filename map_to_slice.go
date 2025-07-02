@@ -4,8 +4,14 @@ import (
 	"sync"
 )
 
-// ConvertSyncMapToUint32Slice transforms a *sync.Map of uint32 keys into a slice of uint32 values and returns if it was non-empty.
-// It iterates over the sync.Map keys, appending them to a uint32 slice, and determines if the map contained elements.
+// ConvertSyncMapToUint32Slice returns a slice of uint32 keys from the provided *sync.Map.
+//
+// Parameters:
+//   - syncMap: A pointer to a sync.Map where keys are of type uint32.
+//
+// Returns:
+//   - []uint32: A slice containing all uint32 keys from the map.
+//   - bool: True if the map contained any elements, false otherwise.
 func ConvertSyncMapToUint32Slice(syncMap *sync.Map) ([]uint32, bool) {
 	var sliceWithMapElements []uint32
 
@@ -22,7 +28,14 @@ func ConvertSyncMapToUint32Slice(syncMap *sync.Map) ([]uint32, bool) {
 	return sliceWithMapElements, mapHasAnyElements
 }
 
-// ConvertSyncedMapToUint32Slice transforms the values of a SyncedMap into a single uint32 slice and checks if the map is non-empty.
+// ConvertSyncedMapToUint32Slice returns a slice of all uint32 values from the provided SyncedMap.
+//
+// Parameters:
+//   - syncMap: A pointer to a SyncedMap with any comparable key type and []uint32 values.
+//
+// Returns:
+//   - []uint32: A slice containing all uint32 values from the map (flattened).
+//   - bool: True if the map contained any elements, false otherwise.
 func ConvertSyncedMapToUint32Slice[K comparable](syncMap *SyncedMap[K, []uint32]) ([]uint32, bool) {
 	var sliceWithMapElements []uint32
 
