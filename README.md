@@ -64,7 +64,7 @@
 		  <img src="https://img.shields.io/github/last-commit/bsv-blockchain/go-tx-map?style=flat&logo=clockify&logoColor=white" alt="Last commit">
 		</a><br/>
         <a href="https://github.com/sponsors/bsv-blockchain">
-          <img src="https://img.shields.io/badge/sponsor-MrZ-181717.svg?logo=github&style=flat" alt="Sponsor">
+          <img src="https://img.shields.io/badge/sponsor-BSV-181717.svg?logo=github&style=flat" alt="Sponsor">
         </a><br/>
       </td>
     </tr>
