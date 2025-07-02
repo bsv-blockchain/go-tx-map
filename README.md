@@ -297,17 +297,17 @@ make bench
 
 ### Benchmark Results
 
-| Benchmark                                                  | Iterations | ns/op |  B/op | allocs/op |
-|------------------------------------------------------------|------------|------:|------:|----------:|
-| [Bytes2Uint16Buckets](tx_map_benchmarks_test.go)           | 1,000,000,000 |     1 |     0 |         0 |
-| [ConvertSyncMapToUint32Slice](tx_map_benchmarks_test.go)   | 86,636     | 13312 | 12920 |        11 |
-| [ConvertSyncedMapToUint32Slice](tx_map_benchmarks_test.go) | 57,505     | 20754 | 12920 |        11 |
-| [NewSplitSwissLockFreeMapUint64](tx_map_benchmarks_test.go)| 4,792     | 414742 | 442192 |      4112 |
-| [NewSplitSwissMap](tx_map_benchmarks_test.go)              | 2,715     | 423537 | 840626 |      4107 |
-| [NewSplitSwissMapUint64](tx_map_benchmarks_test.go)        | 2,401     | 465790 | 868603 |      4112 |
-| [NewSwissLockFreeMapUint64](tx_map_benchmarks_test.go)     | 251,127     | 5740 | 19664 |         3 |
-| [NewSwissMap](tx_map_benchmarks_test.go)                   | 117,189     | 9331 | 42192 |         3 |
-| [NewSwissMapUint64](tx_map_benchmarks_test.go)             | 125,695     | 11093 | 50384 |         3 |
+| Benchmark                                                   | Iterations    |  ns/op |   B/op | allocs/op |
+|-------------------------------------------------------------|---------------|-------:|-------:|----------:|
+| [Bytes2Uint16Buckets](tx_map_benchmarks_test.go)            | 1,000,000,000 |      1 |      0 |         0 |
+| [ConvertSyncMapToUint32Slice](tx_map_benchmarks_test.go)    | 86,636        |  13312 |  12920 |        11 |
+| [ConvertSyncedMapToUint32Slice](tx_map_benchmarks_test.go)  | 57,505        |  20754 |  12920 |        11 |
+| [NewSplitSwissLockFreeMapUint64](tx_map_benchmarks_test.go) | 4,792         | 414742 | 442192 |      4112 |
+| [NewSplitSwissMap](tx_map_benchmarks_test.go)               | 2,715         | 423537 | 840626 |      4107 |
+| [NewSplitSwissMapUint64](tx_map_benchmarks_test.go)         | 2,401         | 465790 | 868603 |      4112 |
+| [NewSwissLockFreeMapUint64](tx_map_benchmarks_test.go)      | 251,127       |   5740 |  19664 |         3 |
+| [NewSwissMap](tx_map_benchmarks_test.go)                    | 117,189       |   9331 |  42192 |         3 |
+| [NewSwissMapUint64](tx_map_benchmarks_test.go)              | 125,695       |  11093 |  50384 |         3 |
 
 > These benchmarks reflect fast, allocation-free lookups for most retrieval functions, ensuring optimal performance in production environments.
 > Performance benchmarks for the core functions in this library, executed on an Apple M1 Max (ARM64).
