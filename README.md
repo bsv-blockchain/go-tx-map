@@ -1,4 +1,7 @@
 # 🚀 go-tx-map
+> High-performance, concurrent-safe Go data structures for transaction hash and key-value mapping
+
+<br/>
 
 <table>
   <thead>
@@ -101,9 +104,6 @@ go get -u github.com/bsv-blockchain/go-tx-map
 - **Usage Examples** – Browse practical patterns either the [examples directory](examples) or view the [example functions](tx_map_examples_test.go)
 - **Benchmarks** – Check the latest numbers in the [benchmark results](#benchmark-results)
 - **Test Suite** – Review both the [unit tests](txmap_test.go) and [fuzz tests](tx_map_fuzz_test.go) (powered by [`testify`](https://github.com/stretchr/testify))
-
-> **Good to know:** `go-tx-map` ships with *zero* runtime dependencies.  
-> The only external package we use is `testify`—and that's strictly for tests.
 
 <br/>
 
