@@ -49,7 +49,7 @@
 //
 // Dependencies:
 // The package depends on the [`swiss`](https://github.com/dolthub/swiss) library and
-// additionally uses the `chainhash` library (`github.com/libsv/go-bt/v2/chainhash`) where applicable.
+// additionally uses the `chainhash` library (`github.com/bsv-blockchain/go-bt/v2/chainhash`) where applicable.
 package txmap
 
 import (
@@ -59,8 +59,8 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/bsv-blockchain/go-bt/v2/chainhash"
 	"github.com/dolthub/swiss"
-	"github.com/libsv/go-bt/v2/chainhash"
 )
 
 // TxMap is a map that stores transaction hashes and associated uint64 values.

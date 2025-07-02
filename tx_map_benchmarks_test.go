@@ -4,7 +4,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/libsv/go-bt/v2/chainhash"
+	"github.com/bsv-blockchain/go-bt/v2/chainhash"
 )
 
 // BenchmarkBytes2Uint16Buckets measures the performance of Bytes2Uint16Buckets.
