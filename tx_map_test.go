@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// Test_bytes2Uint16 tests the Bytes2Uint16Buckets function with various byte arrays and modulus values.
 func Test_bytes2Uint16(t *testing.T) {
 	type args struct {
 		b   [32]byte
@@ -67,6 +68,7 @@ func Test_bytes2Uint16(t *testing.T) {
 	}
 }
 
+// TestNewSwissMap tests the creation and basic usage of a SwissMap.
 func TestNewSwissMap(t *testing.T) {
 	t.Run("NewSwissMap", func(t *testing.T) {
 		m := NewSwissMap(100)
@@ -79,6 +81,7 @@ func TestNewSwissMap(t *testing.T) {
 	})
 }
 
+// TestNewSplitSwissMap tests the creation and basic usage of a SplitSwissMap.
 func TestNewSplitSwissMap(t *testing.T) {
 	t.Run("NewSplitSwissMap", func(t *testing.T) {
 		m := NewSplitSwissMap(100)
@@ -91,6 +94,7 @@ func TestNewSplitSwissMap(t *testing.T) {
 	})
 }
 
+// TestNewSwissLockFreeMapUint64 tests the creation and basic usage of a SwissLockFreeMapUint64.
 func TestNewSwissLockFreeMapUint64(t *testing.T) {
 	t.Run("NewSwissLockFreeMapUint64", func(t *testing.T) {
 		m := NewSwissLockFreeMapUint64(100)
@@ -103,6 +107,7 @@ func TestNewSwissLockFreeMapUint64(t *testing.T) {
 	})
 }
 
+// TestNewSplitSwissLockFreeMapUint64 tests the creation and basic usage of a SplitSwissLockFreeMapUint64.
 func TestNewSplitSwissLockFreeMapUint64(t *testing.T) {
 	t.Run("NewSplitSwissLockFreeMapUint64", func(t *testing.T) {
 		m := NewSplitSwissLockFreeMapUint64(100)
@@ -115,6 +120,7 @@ func TestNewSplitSwissLockFreeMapUint64(t *testing.T) {
 	})
 }
 
+// TestNewSplitSwissMapUint64 tests the creation and basic usage of a SplitSwissMapUint64.
 func TestNewSplitSwissMapUint64(t *testing.T) {
 	t.Run("NewSplitSwissMapUint64", func(t *testing.T) {
 		m := NewSplitSwissMapUint64(100)
@@ -127,6 +133,7 @@ func TestNewSplitSwissMapUint64(t *testing.T) {
 	})
 }
 
+// TestNewSwissMapUint64 tests the creation and basic usage of a SwissMapUint64.
 func TestNewSwissMapUint64(t *testing.T) {
 	t.Run("NewSwissMapUint64", func(t *testing.T) {
 		m := NewSwissMapUint64(100)
@@ -139,6 +146,7 @@ func TestNewSwissMapUint64(t *testing.T) {
 	})
 }
 
+// TestSplitSwissLockFreeMapUint64 tests the creation and basic usage of a SplitSwissLockFreeMapUint64.
 func TestSplitSwissLockFreeMapUint64(t *testing.T) {
 	t.Run("SplitSwissLockFreeMapUint64", func(t *testing.T) {
 		m := NewSplitSwissLockFreeMapUint64(100)
@@ -151,6 +159,7 @@ func TestSplitSwissLockFreeMapUint64(t *testing.T) {
 	})
 }
 
+// testTxMap tests the basic operations of a TxMap implementation.
 func testTxMap(t *testing.T, m TxMap) {
 	err := m.Put([32]byte{0x00, 0x01}, 1)
 	require.NoError(t, err)
@@ -212,6 +221,7 @@ func testTxMap(t *testing.T, m TxMap) {
 	assert.Equal(t, 3, m.Length())
 }
 
+// testTxMapUint64 tests the basic operations of a Uint64 map implementation.
 func testTxMapUint64(t *testing.T, m Uint64) {
 	err := m.Put(1, 1)
 	require.NoError(t, err)
@@ -230,6 +240,7 @@ func testTxMapUint64(t *testing.T, m Uint64) {
 	assert.Equal(t, 1, m.Length())
 }
 
+// testTxHashMap tests the basic operations of a TxHashMap implementation.
 func testTxHashMap(t *testing.T, m TxHashMap) {
 	err := m.Put([32]byte{0x00, 0x01})
 	require.NoError(t, err)

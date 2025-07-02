@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TestSyncedMapLength tests the Length method of SyncedMap.
 func TestSyncedMapLength(t *testing.T) {
 	m := NewSyncedMap[string, int]()
 	m.Set("key1", 1)
@@ -13,6 +14,7 @@ func TestSyncedMapLength(t *testing.T) {
 	assert.Equal(t, 2, m.Length())
 }
 
+// TestSyncedMapExists tests the Exists method of SyncedMap.
 func TestSyncedMapExists(t *testing.T) {
 	m := NewSyncedMap[string, int]()
 	m.Set("key1", 1)
@@ -20,6 +22,7 @@ func TestSyncedMapExists(t *testing.T) {
 	assert.False(t, m.Exists("key2"))
 }
 
+// TestSyncedMapGet tests the Get method of SyncedMap.
 func TestSyncedMapGet(t *testing.T) {
 	m := NewSyncedMap[string, int]()
 	m.Set("key1", 1)
@@ -28,6 +31,7 @@ func TestSyncedMapGet(t *testing.T) {
 	assert.Equal(t, 1, val)
 }
 
+// TestSyncedMapGetWithLimit tests the behavior of SyncedMap when a limit is set on the number of items.
 func TestSyncedMapGetWithLimit(t *testing.T) {
 	t.Run("limit 1", func(t *testing.T) {
 		m := NewSyncedMap[string, int](1)
@@ -50,6 +54,7 @@ func TestSyncedMapGetWithLimit(t *testing.T) {
 	})
 }
 
+// TestSyncedMapRange tests the Range method of SyncedMap.
 func TestSyncedMapRange(t *testing.T) {
 	m := NewSyncedMap[string, int]()
 	m.Set("key1", 1)
@@ -60,6 +65,7 @@ func TestSyncedMapRange(t *testing.T) {
 	assert.Equal(t, 2, items["key2"])
 }
 
+// TestSyncedMapKeys tests the Keys method of SyncedMap.
 func TestSyncedMapKeys(t *testing.T) {
 	m := NewSyncedMap[string, int]()
 	m.Set("key1", 1)
@@ -70,6 +76,7 @@ func TestSyncedMapKeys(t *testing.T) {
 	assert.Contains(t, keys, "key2")
 }
 
+// TestSyncedMapSetIfNotExists tests the SetIfNotExists method of SyncedMap.
 func TestSyncedMapSetIfNotExists(t *testing.T) {
 	m := NewSyncedMap[string, int]()
 
@@ -82,6 +89,7 @@ func TestSyncedMapSetIfNotExists(t *testing.T) {
 	assert.False(t, isSet) // should not be set since it already exists
 }
 
+// TestSyncedMapIterate tests the Iterate method of SyncedMap.
 func TestSyncedMapIterate(t *testing.T) {
 	t.Run("continue iteration", func(t *testing.T) {
 		m := NewSyncedMap[string, int]()
@@ -112,6 +120,7 @@ func TestSyncedMapIterate(t *testing.T) {
 	})
 }
 
+// TestSyncedMapSetMulti tests the SetMulti method of SyncedMap.
 func TestSyncedMapSetMulti(t *testing.T) {
 	m := NewSyncedMap[string, int]()
 	m.SetMulti([]string{"key1", "key2"}, 1)
@@ -119,6 +128,7 @@ func TestSyncedMapSetMulti(t *testing.T) {
 	assert.Equal(t, 1, m.m["key2"])
 }
 
+// TestSyncedMapDelete tests the Delete and Exists methods of SyncedMap.
 func TestSyncedMapDelete(t *testing.T) {
 	m := NewSyncedMap[string, int]()
 	m.Set("key1", 1)
@@ -126,6 +136,7 @@ func TestSyncedMapDelete(t *testing.T) {
 	assert.False(t, m.Exists("key1"))
 }
 
+// TestSyncedMapClear tests the Clear and Length methods of SyncedMap.
 func TestSyncedMapClear(t *testing.T) {
 	m := NewSyncedMap[string, int]()
 	m.Set("key1", 1)
@@ -134,6 +145,7 @@ func TestSyncedMapClear(t *testing.T) {
 	assert.Equal(t, 0, m.Length())
 }
 
+// TestSyncedSliceLength tests the Length and Size methods of SyncedSlice.
 func TestSyncedSliceLength(t *testing.T) {
 	t.Run("length not set", func(t *testing.T) {
 		s := NewSyncedSlice[int]()
@@ -152,6 +164,7 @@ func TestSyncedSliceLength(t *testing.T) {
 	})
 }
 
+// TestSyncedSliceGet tests the Get method of SyncedSlice.
 func TestSyncedSliceGet(t *testing.T) {
 	s := NewSyncedSlice[int]()
 	val := 42
@@ -164,6 +177,7 @@ func TestSyncedSliceGet(t *testing.T) {
 	assert.False(t, ok)
 }
 
+// TestSyncedSliceAppend tests the Append method of SyncedSlice.
 func TestSyncedSliceAppend(t *testing.T) {
 	s := NewSyncedSlice[int]()
 	val := 42
@@ -174,6 +188,7 @@ func TestSyncedSliceAppend(t *testing.T) {
 	assert.Equal(t, 42, *item)
 }
 
+// TestSyncedSlicePop tests the Pop method of SyncedSlice.
 func TestSyncedSlicePop(t *testing.T) {
 	s := NewSyncedSlice[int]()
 	val := 42
@@ -186,6 +201,7 @@ func TestSyncedSlicePop(t *testing.T) {
 	assert.False(t, ok)
 }
 
+// TestSyncedSliceShift tests the Shift method of SyncedSlice.
 func TestSyncedSliceShift(t *testing.T) {
 	s := NewSyncedSlice[int]()
 	val := 42
@@ -208,6 +224,7 @@ func TestSyncedSliceShift(t *testing.T) {
 	assert.False(t, ok)
 }
 
+// TestSyncedSwissMapLength tests the Length method of SyncedSwissMap.
 func TestSyncedSwissMapLength(t *testing.T) {
 	m := NewSyncedSwissMap[string, int](10)
 	m.Set("key1", 1)
@@ -215,6 +232,7 @@ func TestSyncedSwissMapLength(t *testing.T) {
 	assert.Equal(t, 2, m.Length())
 }
 
+// TestSyncedSwissMapGet tests the Get method of SyncedSwissMap.
 func TestSyncedSwissMapGet(t *testing.T) {
 	m := NewSyncedSwissMap[string, int](10)
 	m.Set("key1", 1)
@@ -223,6 +241,7 @@ func TestSyncedSwissMapGet(t *testing.T) {
 	assert.Equal(t, 1, val)
 }
 
+// TestSyncedSwissMapRange tests the Range method of SyncedSwissMap.
 func TestSyncedSwissMapRange(t *testing.T) {
 	m := NewSyncedSwissMap[string, int](10)
 	m.Set("key1", 1)
@@ -233,6 +252,7 @@ func TestSyncedSwissMapRange(t *testing.T) {
 	assert.Equal(t, 2, items["key2"])
 }
 
+// TestSyncedSwissMapDelete tests the Delete and Get methods of SyncedSwissMap.
 func TestSyncedSwissMapDelete(t *testing.T) {
 	m := NewSyncedSwissMap[string, int](10)
 	m.Set("key1", 1)
@@ -241,6 +261,7 @@ func TestSyncedSwissMapDelete(t *testing.T) {
 	assert.False(t, ok)
 }
 
+// TestSyncedSwissMapDeleteBatch tests the DeleteBatch method of SyncedSwissMap.
 func TestSyncedSwissMapDeleteBatch(t *testing.T) {
 	m := NewSyncedSwissMap[string, int](10)
 	m.Set("key1", 1)

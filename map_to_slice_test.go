@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TestConvertSyncMapToUint32Slice tests the conversion of a sync.Map to a slice of uint32.
 func TestConvertSyncMapToUint32Slice(t *testing.T) {
 	t.Run("Empty map", func(t *testing.T) {
 		var oldBlockIDs sync.Map
@@ -28,6 +29,7 @@ func TestConvertSyncMapToUint32Slice(t *testing.T) {
 	})
 }
 
+// TestGenericConvertSyncMapToUint32Slice tests the conversion of a generic synced map to a slice of uint32.
 func TestGenericConvertSyncMapToUint32Slice(t *testing.T) {
 	t.Run("Empty map", func(t *testing.T) {
 		oldBlockIDs := NewSyncedMap[int, []uint32]()
