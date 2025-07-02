@@ -103,7 +103,7 @@ go get -u github.com/bsv-blockchain/go-tx-map
 - **API Reference** – Dive into the godocs at [pkg.go.dev/github.com/bsv-blockchain/go-tx-map](https://pkg.go.dev/github.com/bsv-blockchain/go-tx-map)
 - **Usage Examples** – Browse practical patterns either the [examples directory](examples) or view the [example functions](tx_map_examples_test.go)
 - **Benchmarks** – Check the latest numbers in the [benchmark results](#benchmark-results)
-- **Test Suite** – Review both the [unit tests](txmap_test.go) and [fuzz tests](tx_map_fuzz_test.go) (powered by [`testify`](https://github.com/stretchr/testify))
+- **Test Suite** – Review both the [unit tests](tx_map_test.go) and [fuzz tests](tx_map_fuzz_test.go) (powered by [`testify`](https://github.com/stretchr/testify))
 
 <br/>
 
