@@ -74,7 +74,6 @@
 <br/>
 
 ## 🗂️ Table of Contents
-* [What's Inside](#-whats-inside)
 * [Installation](#-installation)
 * [Documentation](#-documentation)
 * [Examples & Tests](#-examples--tests)
@@ -86,8 +85,6 @@
 * [License](#-license)
 
 <br/>
-
-## 🧩 What's Inside
 
 ## 📦 Installation
 
@@ -290,7 +287,7 @@ make test
 
 ## ⚡ Benchmarks
 
-Run the Go [benchmarks](template_benchmark_test.go):
+Run the Go [benchmarks](tx_map_benchmarks_test.go):
 
 ```bash script
 make bench
