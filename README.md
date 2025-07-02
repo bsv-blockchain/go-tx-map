@@ -297,11 +297,10 @@ make bench
 
 ### Benchmark Results
 
-| Benchmark                          | Iterations | ns/op | B/op | allocs/op |
-|------------------------------------|------------|------:|-----:|----------:|
-| [Greet](tx_map_benchmarks_test.go) | 21,179,739 | 56.59 |   40 |         2 |
-| [ConvertSyncMapToUint32Slice](tx_map_benchmarks_test.go) | 78,904 | 15365 | 12920 | 11 |
-| [ConvertSyncedMapToUint32Slice](tx_map_benchmarks_test.go) | 46,190 | 22160 | 12920 | 11 |
+| Benchmark                                                  | Iterations | ns/op |  B/op | allocs/op |
+|------------------------------------------------------------|------------|------:|------:|----------:|
+| [ConvertSyncMapToUint32Slice](tx_map_benchmarks_test.go)   | 78,904     | 15365 | 12920 |        11 |
+| [ConvertSyncedMapToUint32Slice](tx_map_benchmarks_test.go) | 46,190     | 22160 | 12920 |        11 |
 
 > These benchmarks reflect fast, allocation-free lookups for most retrieval functions, ensuring optimal performance in production environments.
 > Performance benchmarks for the core functions in this library, executed on an Apple M1 Max (ARM64).
