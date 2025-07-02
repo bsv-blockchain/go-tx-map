@@ -3,7 +3,7 @@ description: General template for asking a question related to this project
 title: "[Question] <your topic here>"
 labels: ["question"]
 assignees:
-    - bsv-blockchain/Teranode
+    - icellan
 body:
     - type: textarea
       id: question

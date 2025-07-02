@@ -3,7 +3,7 @@ description: Suggest an idea or improvement for this project
 title: "[Feature] <brief description of feature>"
 labels: ["idea"]
 assignees:
-    - bsv-blockchain/Teranode
+    - icellan
 body:
     - type: textarea
       id: problem_description
