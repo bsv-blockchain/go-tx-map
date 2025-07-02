@@ -3,8 +3,8 @@ module github.com/bsv-blockchain/go-tx-map
 go 1.24
 
 require (
+	github.com/bsv-blockchain/go-bt/v2 v2.3.0
 	github.com/dolthub/swiss v0.2.1
-	github.com/libsv/go-bt/v2 v2.2.5
 	github.com/stretchr/testify v1.10.0
 )
 
@@ -17,5 +17,3 @@ require (
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/libsv/go-bt/v2 => github.com/ordishs/go-bt/v2 v2.2.22
