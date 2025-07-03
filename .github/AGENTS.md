@@ -34,7 +34,7 @@ Additional `AGENTS.md` files **may exist in subdirectories** to provide more con
 | `.vscode/`       | VS Code settings and extensions for development                                   |
 | `.make/`         | Shared Makefile targets used by `Makefile`                                        |
 | `examples/`      | Example program demonstrating package usage                                       |
-| `.` (root)       | Source files and tests for the `go-wire` package                                  |
+| `.` (root)       | Source files and tests for the local package                                      |
 
 <br/>
 
