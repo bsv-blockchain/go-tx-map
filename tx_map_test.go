@@ -290,7 +290,8 @@ func testTxHashMap(t *testing.T, m TxHashMap) {
 	assert.Equal(t, 3, m.Length())
 }
 
-func TestSplitSwissMap_Delete(t *testing.T) {
+// TestSplitSwissMapDelete tests the Delete method of SplitSwissMap.
+func TestSplitSwissMapDelete(t *testing.T) {
 	tests := []struct {
 		name    string
 		prepare func(*SplitSwissMap) chainhash.Hash
