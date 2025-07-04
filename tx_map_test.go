@@ -159,7 +159,8 @@ func TestSplitSwissLockFreeMapUint64(t *testing.T) {
 	})
 }
 
-func TestSplitSwissMap_PutMultiBucket(t *testing.T) {
+// TestSplitSwissMapPutMultiBucket tests the PutMultiBucket method of SplitSwissMap.
+func TestSplitSwissMapPutMultiBucket(t *testing.T) {
 	t.Run("bucket does not exist", func(t *testing.T) {
 		m := NewSplitSwissMap(10)
 		err := m.PutMultiBucket(m.nrOfBuckets+1, []chainhash.Hash{{0x00, 0x01}}, 1)
