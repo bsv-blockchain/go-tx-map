@@ -32,7 +32,7 @@
         <a href="https://goreportcard.com/report/github.com/bsv-blockchain/go-tx-map">
           <img src="https://goreportcard.com/badge/github.com/bsv-blockchain/go-tx-map?style=flat" alt="Go Report Card">
         </a><br/>
-		<a href="https://codecov.io/gh/bsv-blockchain/go-tx-map">
+		<a href="https://app.codecov.io/gh/bsv-blockchain/go-tx-map/tree/master">
           <img src="https://codecov.io/gh/bsv-blockchain/go-tx-map/branch/master/graph/badge.svg?style=flat" alt="Code Coverage">
         </a><br/>
 		<a href="https://scorecard.dev/viewer/?uri=github.com/bsv-blockchain/go-tx-map">
