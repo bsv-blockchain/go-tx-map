@@ -7,6 +7,8 @@ import (
 	"github.com/bsv-blockchain/go-bt/v2/chainhash"
 )
 
+const errMapShouldNotBeNil = "map should not be nil"
+
 // BenchmarkBytes2Uint16Buckets measures the performance of Bytes2Uint16Buckets.
 func BenchmarkBytes2Uint16Buckets(b *testing.B) {
 	hash := chainhash.Hash{0x01, 0x02}
@@ -63,7 +65,7 @@ func BenchmarkNewSplitSwissLockFreeMapUint64(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		if NewSplitSwissLockFreeMapUint64(1000) == nil {
-			b.Fatal("map should not be nil")
+			b.Fatal(errMapShouldNotBeNil)
 		}
 	}
 }
@@ -75,7 +77,7 @@ func BenchmarkNewSplitSwissMap(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		if NewSplitSwissMap(1000) == nil {
-			b.Fatal("map should not be nil")
+			b.Fatal(errMapShouldNotBeNil)
 		}
 	}
 }
@@ -87,7 +89,7 @@ func BenchmarkNewSplitSwissMapUint64(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		if NewSplitSwissMapUint64(1000) == nil {
-			b.Fatal("map should not be nil")
+			b.Fatal(errMapShouldNotBeNil)
 		}
 	}
 }
@@ -99,7 +101,7 @@ func BenchmarkNewSwissLockFreeMapUint64(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		if NewSwissLockFreeMapUint64(1000) == nil {
-			b.Fatal("map should not be nil")
+			b.Fatal(errMapShouldNotBeNil)
 		}
 	}
 }
@@ -111,7 +113,7 @@ func BenchmarkNewSwissMap(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		if NewSwissMap(1000) == nil {
-			b.Fatal("map should not be nil")
+			b.Fatal(errMapShouldNotBeNil)
 		}
 	}
 }
@@ -123,7 +125,7 @@ func BenchmarkNewSwissMapUint64(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		if NewSwissMapUint64(1000) == nil {
-			b.Fatal("map should not be nil")
+			b.Fatal(errMapShouldNotBeNil)
 		}
 	}
 }

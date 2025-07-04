@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Test_bytes2Uint16 tests the Bytes2Uint16Buckets function with various byte arrays and modulus values.
-func Test_bytes2Uint16(t *testing.T) {
+// TestBytes2Uint16 tests the Bytes2Uint16Buckets function with various byte arrays and modulus values.
+func TestBytes2Uint16(t *testing.T) {
 	type args struct {
 		b   [32]byte
 		mod uint16
