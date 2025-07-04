@@ -708,7 +708,7 @@ func (g *SplitSwissMap) Delete(hash chainhash.Hash) error {
 // Returns:
 //   - TxMap: A map where the keys are bucket indices and the values are pointers to SwissMapUint64 instances.
 func (g *SplitSwissMap) Map() *SwissMapUint64 {
-	m := NewSwissMapUint64(uint32(g.Length())) //nolint:gosec // integer overflow conversion int -> uint3
+	m := NewSwissMapUint64(uint32(g.Length())) //nolint:gosec // integer overflow conversion int -> uint32
 	for i := uint16(0); i <= g.nrOfBuckets; i++ {
 		keys := g.m[i].Keys()
 		for _, key := range keys {

@@ -68,7 +68,6 @@
 			"gochecknoglobals",
 			"gochecknoinits",
 			"gochecksumtype",
-			"godox",
 			"goheader",
 			"gomoddirectives",
 			"gosec",
