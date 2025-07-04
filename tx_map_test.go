@@ -159,6 +159,43 @@ func TestSplitSwissLockFreeMapUint64(t *testing.T) {
 	})
 }
 
+// TestSplitSwissMapPutMultiBucket tests the PutMultiBucket method of SplitSwissMap.
+func TestSplitSwissMapPutMultiBucket(t *testing.T) {
+	t.Run("bucket does not exist", func(t *testing.T) {
+		m := NewSplitSwissMap(10)
+		err := m.PutMultiBucket(m.nrOfBuckets+1, []chainhash.Hash{{0x00, 0x01}}, 1)
+		require.Error(t, err)
+		assert.ErrorIs(t, err, ErrBucketDoesNotExist)
+	})
+
+	t.Run("duplicate hash", func(t *testing.T) {
+		m := NewSplitSwissMap(10)
+		h := chainhash.Hash{0x01, 0x02}
+		bucket := Bytes2Uint16Buckets(h, m.nrOfBuckets)
+		require.NoError(t, m.PutMultiBucket(bucket, []chainhash.Hash{h}, 1))
+
+		err := m.PutMultiBucket(bucket, []chainhash.Hash{h}, 2)
+		require.Error(t, err)
+		assert.ErrorIs(t, err, ErrHashAlreadyExists)
+	})
+
+	t.Run("success", func(t *testing.T) {
+		m := NewSplitSwissMap(10)
+		h1 := chainhash.Hash{0x02, 0x01, 0x01}
+		h2 := chainhash.Hash{0x02, 0x01, 0x02}
+		bucket := Bytes2Uint16Buckets(h1, m.nrOfBuckets)
+		hashes := []chainhash.Hash{h1, h2}
+
+		require.NoError(t, m.PutMultiBucket(bucket, hashes, 3))
+
+		for _, h := range hashes {
+			v, ok := m.Get(h)
+			assert.True(t, ok)
+			assert.Equal(t, uint64(3), v)
+		}
+	})
+}
+
 // testTxMap tests the basic operations of a TxMap implementation.
 func testTxMap(t *testing.T, m TxMap) {
 	err := m.Put([32]byte{0x00, 0x01}, 1)
@@ -290,6 +327,7 @@ func testTxHashMap(t *testing.T, m TxHashMap) {
 	assert.Equal(t, 3, m.Length())
 }
 
+
 // TestSplitSwissMapBuckets verifies the number of buckets returned.
 func TestSplitSwissMapBuckets(t *testing.T) {
 	m := NewSplitSwissMap(10)
@@ -334,4 +372,54 @@ func TestSplitSwissMapPutMulti(t *testing.T) {
 		require.Error(t, err)
 		assert.Equal(t, 1, m.Length())
 	})
+}
+
+// TestSplitSwissMapDelete tests the Delete method of SplitSwissMap.
+func TestSplitSwissMapDelete(t *testing.T) {
+	tests := []struct {
+		name    string
+		prepare func(*SplitSwissMap) chainhash.Hash
+		wantErr error
+	}{
+		{
+			name: "bucket missing",
+			prepare: func(m *SplitSwissMap) chainhash.Hash {
+				hash := chainhash.Hash{0x00, 0x03}
+				bucket := Bytes2Uint16Buckets(hash, m.nrOfBuckets)
+				delete(m.m, bucket)
+				return hash
+			},
+			wantErr: ErrBucketDoesNotExist,
+		},
+		{
+			name: "hash missing",
+			prepare: func(_ *SplitSwissMap) chainhash.Hash {
+				return chainhash.Hash{0x00, 0x05}
+			},
+			wantErr: ErrHashDoesNotExist,
+		},
+		{
+			name: "delete success",
+			prepare: func(m *SplitSwissMap) chainhash.Hash {
+				hash := chainhash.Hash{0x00, 0x07}
+				require.NoError(t, m.Put(hash, 1))
+				return hash
+			},
+			wantErr: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := NewSplitSwissMap(10)
+			hash := tt.prepare(m)
+			err := m.Delete(hash)
+			if tt.wantErr != nil {
+				require.ErrorIs(t, err, tt.wantErr)
+			} else {
+				require.NoError(t, err)
+				assert.False(t, m.Exists(hash))
+			}
+		})
+	}
 }
