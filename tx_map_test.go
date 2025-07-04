@@ -289,3 +289,52 @@ func testTxHashMap(t *testing.T, m TxHashMap) {
 
 	assert.Equal(t, 3, m.Length())
 }
+
+func TestSplitSwissMap_Delete(t *testing.T) {
+	tests := []struct {
+		name    string
+		prepare func(*SplitSwissMap) chainhash.Hash
+		wantErr error
+	}{
+		{
+			name: "bucket missing",
+			prepare: func(m *SplitSwissMap) chainhash.Hash {
+				hash := chainhash.Hash{0x00, 0x03}
+				bucket := Bytes2Uint16Buckets(hash, m.nrOfBuckets)
+				delete(m.m, bucket)
+				return hash
+			},
+			wantErr: ErrBucketDoesNotExist,
+		},
+		{
+			name: "hash missing",
+			prepare: func(_ *SplitSwissMap) chainhash.Hash {
+				return chainhash.Hash{0x00, 0x05}
+			},
+			wantErr: ErrHashDoesNotExist,
+		},
+		{
+			name: "delete success",
+			prepare: func(m *SplitSwissMap) chainhash.Hash {
+				hash := chainhash.Hash{0x00, 0x07}
+				require.NoError(t, m.Put(hash, 1))
+				return hash
+			},
+			wantErr: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := NewSplitSwissMap(10)
+			hash := tt.prepare(m)
+			err := m.Delete(hash)
+			if tt.wantErr != nil {
+				require.ErrorIs(t, err, tt.wantErr)
+			} else {
+				require.NoError(t, err)
+				assert.False(t, m.Exists(hash))
+			}
+		})
+	}
+}
