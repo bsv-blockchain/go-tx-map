@@ -327,7 +327,6 @@ func testTxHashMap(t *testing.T, m TxHashMap) {
 	assert.Equal(t, 3, m.Length())
 }
 
-
 // TestSplitSwissMapBuckets verifies the number of buckets returned.
 func TestSplitSwissMapBuckets(t *testing.T) {
 	m := NewSplitSwissMap(10)
