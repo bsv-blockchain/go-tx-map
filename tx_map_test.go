@@ -159,6 +159,42 @@ func TestSplitSwissLockFreeMapUint64(t *testing.T) {
 	})
 }
 
+func TestSplitSwissMap_PutMultiBucket(t *testing.T) {
+	t.Run("bucket does not exist", func(t *testing.T) {
+		m := NewSplitSwissMap(10)
+		err := m.PutMultiBucket(m.nrOfBuckets+1, []chainhash.Hash{{0x00, 0x01}}, 1)
+		require.Error(t, err)
+		assert.ErrorIs(t, err, ErrBucketDoesNotExist)
+	})
+
+	t.Run("duplicate hash", func(t *testing.T) {
+		m := NewSplitSwissMap(10)
+		h := chainhash.Hash{0x01, 0x02}
+		bucket := Bytes2Uint16Buckets(h, m.nrOfBuckets)
+		require.NoError(t, m.PutMultiBucket(bucket, []chainhash.Hash{h}, 1))
+
+		err := m.PutMultiBucket(bucket, []chainhash.Hash{h}, 2)
+		require.Error(t, err)
+		assert.ErrorIs(t, err, ErrHashAlreadyExists)
+	})
+
+	t.Run("success", func(t *testing.T) {
+		m := NewSplitSwissMap(10)
+		h1 := chainhash.Hash{0x02, 0x01, 0x01}
+		h2 := chainhash.Hash{0x02, 0x01, 0x02}
+		bucket := Bytes2Uint16Buckets(h1, m.nrOfBuckets)
+		hashes := []chainhash.Hash{h1, h2}
+
+		require.NoError(t, m.PutMultiBucket(bucket, hashes, 3))
+
+		for _, h := range hashes {
+			v, ok := m.Get(h)
+			assert.True(t, ok)
+			assert.Equal(t, uint64(3), v)
+		}
+	})
+}
+
 // testTxMap tests the basic operations of a TxMap implementation.
 func testTxMap(t *testing.T, m TxMap) {
 	err := m.Put([32]byte{0x00, 0x01}, 1)
