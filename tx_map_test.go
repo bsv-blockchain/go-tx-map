@@ -159,9 +159,9 @@ func TestSplitSwissLockFreeMapUint64(t *testing.T) {
 	})
 }
 
-// TestSwissLockFreeMapUint64_Get_ValueExists ensures getting an existing key
+// TestSwissLockFreeMapUint64GetValueExists ensures getting an existing key
 // returns the stored value and true.
-func TestSwissLockFreeMapUint64_Get_ValueExists(t *testing.T) {
+func TestSwissLockFreeMapUint64GetValueExists(t *testing.T) {
 	m := NewSwissLockFreeMapUint64(10)
 	require.NoError(t, m.Put(1, 5))
 
@@ -170,9 +170,9 @@ func TestSwissLockFreeMapUint64_Get_ValueExists(t *testing.T) {
 	assert.Equal(t, uint64(5), val)
 }
 
-// TestSwissLockFreeMapUint64_Get_ValueMissing ensures getting a missing key
+// TestSwissLockFreeMapUint64GetValueMissing ensures getting a missing key
 // returns zero value and false.
-func TestSwissLockFreeMapUint64_Get_ValueMissing(t *testing.T) {
+func TestSwissLockFreeMapUint64GetValueMissing(t *testing.T) {
 	m := NewSwissLockFreeMapUint64(10)
 
 	val, ok := m.Get(2)
