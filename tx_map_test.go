@@ -159,6 +159,27 @@ func TestSplitSwissLockFreeMapUint64(t *testing.T) {
 	})
 }
 
+// TestSwissLockFreeMapUint64_Get_ValueExists ensures getting an existing key
+// returns the stored value and true.
+func TestSwissLockFreeMapUint64_Get_ValueExists(t *testing.T) {
+	m := NewSwissLockFreeMapUint64(10)
+	require.NoError(t, m.Put(1, 5))
+
+	val, ok := m.Get(1)
+	assert.True(t, ok)
+	assert.Equal(t, uint64(5), val)
+}
+
+// TestSwissLockFreeMapUint64_Get_ValueMissing ensures getting a missing key
+// returns zero value and false.
+func TestSwissLockFreeMapUint64_Get_ValueMissing(t *testing.T) {
+	m := NewSwissLockFreeMapUint64(10)
+
+	val, ok := m.Get(2)
+	assert.False(t, ok)
+	assert.Equal(t, uint64(0), val)
+}
+
 // TestSplitSwissMapPutMultiBucket tests the PutMultiBucket method of SplitSwissMap.
 func TestSplitSwissMapPutMultiBucket(t *testing.T) {
 	t.Run("bucket does not exist", func(t *testing.T) {
