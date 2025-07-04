@@ -327,6 +327,53 @@ func testTxHashMap(t *testing.T, m TxHashMap) {
 	assert.Equal(t, 3, m.Length())
 }
 
+
+// TestSplitSwissMapBuckets verifies the number of buckets returned.
+func TestSplitSwissMapBuckets(t *testing.T) {
+	m := NewSplitSwissMap(10)
+	require.NotNil(t, m)
+	assert.Equal(t, uint16(1024), m.Buckets())
+}
+
+// TestSplitSwissMapPutMulti tests the PutMulti method of SplitSwissMap.
+func TestSplitSwissMapPutMulti(t *testing.T) {
+	t.Run("empty slice", func(t *testing.T) {
+		m := NewSplitSwissMap(10)
+		err := m.PutMulti(nil, 1)
+		require.NoError(t, err)
+		assert.Equal(t, 0, m.Length())
+	})
+
+	t.Run("successful insert", func(t *testing.T) {
+		m := NewSplitSwissMap(10)
+		hashes := []chainhash.Hash{{0x00, 0x01}, {0x02, 0x02}, {0x04, 0x03}}
+		require.NoError(t, m.PutMulti(hashes, 2))
+		for _, h := range hashes {
+			ok := m.Exists(h)
+			assert.True(t, ok)
+		}
+		assert.Equal(t, len(hashes), m.Length())
+	})
+
+	t.Run("error on duplicate", func(t *testing.T) {
+		m := NewSplitSwissMap(10)
+		hash := chainhash.Hash{0x09, 0x01}
+		require.NoError(t, m.Put(hash, 3))
+		err := m.PutMulti([]chainhash.Hash{hash, {0x0a, 0x01}}, 3)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to put multi in bucket")
+		assert.Equal(t, 1, m.Length())
+	})
+
+	t.Run("error on duplicate within slice", func(t *testing.T) {
+		m := NewSplitSwissMap(10)
+		hash := chainhash.Hash{0x01, 0x02}
+		err := m.PutMulti([]chainhash.Hash{hash, hash}, 1)
+		require.Error(t, err)
+		assert.Equal(t, 1, m.Length())
+	})
+}
+
 // TestSplitSwissMapDelete tests the Delete method of SplitSwissMap.
 func TestSplitSwissMapDelete(t *testing.T) {
 	tests := []struct {
