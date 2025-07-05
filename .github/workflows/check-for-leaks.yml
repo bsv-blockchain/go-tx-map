@@ -36,6 +36,7 @@ jobs:
         uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 #v unknown
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
           GITLEAKS_NOTIFY_USER_LIST: '@icellan'
           GITLEAKS_ENABLE_COMMENTS: 'true'
           GITLEAKS_CONFIG: '.github/.gitleaks.toml'
