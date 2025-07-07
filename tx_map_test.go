@@ -368,10 +368,12 @@ func TestSplitSwissMapPutMulti(t *testing.T) {
 		m := NewSplitSwissMap(10)
 		hashes := []chainhash.Hash{{0x00, 0x01}, {0x02, 0x02}, {0x04, 0x03}}
 		require.NoError(t, m.PutMulti(hashes, 2))
+
 		for _, h := range hashes {
 			ok := m.Exists(h)
 			assert.True(t, ok)
 		}
+
 		assert.Equal(t, len(hashes), m.Length())
 	})
 
@@ -433,6 +435,7 @@ func TestSplitSwissMapDelete(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			m := NewSplitSwissMap(10)
 			hash := tt.prepare(m)
+
 			err := m.Delete(hash)
 			if tt.wantErr != nil {
 				require.ErrorIs(t, err, tt.wantErr)

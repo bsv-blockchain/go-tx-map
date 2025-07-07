@@ -34,6 +34,7 @@ func FuzzBytes2Uint16Buckets(f *testing.F) {
 		if mod == 0 {
 			t.Skip("mod cannot be zero")
 		}
+
 		if len(b) < 2 {
 			t.Skip("need at least two bytes")
 		}

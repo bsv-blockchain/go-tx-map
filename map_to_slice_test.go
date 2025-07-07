@@ -13,6 +13,7 @@ import (
 func TestConvertSyncMapToUint32Slice(t *testing.T) {
 	t.Run("Empty map", func(t *testing.T) {
 		var oldBlockIDs sync.Map
+
 		result, hasTransactions := ConvertSyncMapToUint32Slice(&oldBlockIDs)
 		assert.Empty(t, result)
 		assert.False(t, hasTransactions)
@@ -102,10 +103,12 @@ func TestSplitSwissMapUint64PutMulti(t *testing.T) {
 		m := NewSplitSwissMapUint64(10)
 		hashes := []chainhash.Hash{{0x00, 0x01}, {0x02, 0x02}, {0x04, 0x03}}
 		require.NoError(t, m.PutMulti(hashes, 2))
+
 		for _, h := range hashes {
 			ok := m.Exists(h)
 			assert.True(t, ok)
 		}
+
 		assert.Equal(t, len(hashes), m.Length())
 	})
 
