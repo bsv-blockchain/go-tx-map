@@ -6,16 +6,16 @@
 * @icellan
 
 # GitHub Actions workflows
-.github/workflows/* @icellan
+.github/workflows/* @mrz1836
 
 # Documentation files
-*.md @icellan
+*.md @mrz1836
 
 # Build and makefiles
-Makefile @icellan
-.make/*.mk @icellan
-*.mk @icellan
+Makefile @mrz1836
+.make/*.mk @mrz1836
+*.mk @mrz1836
 
 # Go module dependencies
-go.mod @icellan
-go.sum @icellan
+go.mod @mrz1836
+go.sum @mrz1836
