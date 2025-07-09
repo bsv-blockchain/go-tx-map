@@ -40,7 +40,17 @@ updates:
     allow:
       - dependency-type: "direct"
     groups:
-      gomod-minor-patch:
+      gomod-minor:
+        update-types: [ "minor" ]
+      gomod-patch:
+        update-types: [ "patch" ]
+      security-deps:
+        patterns:
+          - "*crypto*"
+          - "*security*"
+          - "*auth*"
+          - "*jwt*"
+          - "*oauth*"
         update-types: [ "minor", "patch" ]
     open-pull-requests-limit: 10
     assignees: [ "galt-tr","mrz1836" ]
@@ -48,11 +58,6 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
-    ignore:
-      - dependency-name: "golang.org/x/mod"
-        versions: [ "<0.15.0" ]
-      - dependency-name: "github.com/aws/aws-sdk-go"
-        versions: [ "<1.50.0" ]
 
   # ──────────────────────────────────────────────────────────────
   # 2. GitHub Actions Workflows
