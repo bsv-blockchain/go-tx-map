@@ -8,8 +8,8 @@ Need help with **go-tx-map**? You're in the right place. Here’s how to get sup
 
 Before asking, check the existing threads:
 
-* 🔍 Search [Discussions](https://github.com/bsv-blockchain/go-tx-map/discussions)
-* 🆕 Can’t find what you need? Start a new topic and ask away!
+* 🔍 Search [Issues](https://github.com/bsv-blockchain/go-tx-map/issues) or [Pull Requests](https://github.com/bsv-blockchain/go-tx-map/pulls?q=is%3Apr+is%3Aopen+is%3Aclosed)
+* 🆕 Can’t find what you need? Start a [new issue](https://github.com/bsv-blockchain/go-tx-map/issues/new?template=question.yml).
 
 <br/>
 
@@ -50,4 +50,4 @@ For sensitive or non-public concerns, reach out to:
 
 <br/>
 
-Thanks for your interest and support — we’re here to help, and we appreciate your contributions. 🚀
+Thanks for your interest and support - we're here to help, and we appreciate your contributions. 🚀
