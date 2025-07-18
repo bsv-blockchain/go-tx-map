@@ -469,7 +469,7 @@ Code must be cleanly formatted and pass all linters before being committed.
 go fmt ./...
 goimports -w .
 gofumpt -w .
-golangci-lint run
+make lint
 go vet ./...
 ```
 
@@ -478,6 +478,33 @@ go vet ./...
 Editors should honor `.editorconfig` for indentation and whitespace rules, and
 Git respects `.gitattributes` to enforce consistent line endings across
 platforms.
+
+<br/>
+
+### 💄 Prettier (YAML Formatting)
+
+YAML files must be formatted consistently using Prettier to ensure clean diffs and readable configuration files.
+
+**Local Setup:**
+```bash
+# Install prettier locally
+npm init -y && npm install --save-dev prettier
+```
+
+**Format YAML files:**
+```bash
+# Check formatting
+npx prettier "**/*.{yml,yaml}" --check --config .github/.prettierrc.yml --ignore-path .github/.prettierignore
+
+# Fix formatting issues
+npx prettier "**/*.{yml,yaml}" --write --config .github/.prettierrc.yml --ignore-path .github/.prettierignore
+```
+
+**Configuration Files:**
+* [`.github/.prettierrc.yml`](.prettierrc.yml) - Prettier configuration settings
+* [`.github/.prettierignore`](.prettierignore) - Files and patterns to ignore during formatting
+
+> CI automatically validates YAML formatting using the same prettier configuration. All YAML files must pass formatting checks before merge.
 
 <br/>
 
@@ -505,11 +532,20 @@ We use the `testify` suite for unit tests. All tests must follow these conventio
 * Mock external dependencies — tests should be fast and deterministic
 * Use descriptive test names that explain the scenario being tested
 * Test error cases — ensure your error handling actually works
+* Handle all errors in tests properly:
+	* `os.Setenv()` returns an error - use `require.NoError(t, err)`
+	* `os.Unsetenv()` returns an error - use `require.NoError(t, err)`
+	* `db.Close()` in defer statements - wrap in anonymous function: `defer func() { _ = db.Close() }()`
+	* Deferred `os.Setenv()` for cleanup - wrap in anonymous function to ignore error
 
 Run tests locally with:
-
 ```bash
 go test ./...
+```
+
+Or use our makefile:
+```bash
+make test
 ```
 
 > All tests must pass in CI prior to merge.
@@ -1049,7 +1085,7 @@ CI automatically runs on every PR to verify:
 * Linting (`make lint`)
 * Tests (`make test`)
 * Fuzz tests (if applicable) (`make run-fuzz-tests`)
-* This codebase uses GitHub Actions; test workflows reside in `.github/workflows/fortress.yml`
+* This codebase uses GitHub Actions; test workflows reside in `.github/workflows/fortress.yml` and `.github/workflows/fortress-test-suite.yml`.
 * Pin each external GitHub Action to a **full commit SHA** (e.g., `actions/checkout@2f3b4a2e0e471e13e2ea2bc2a350e888c9cf9b75`) as recommended by GitHub's [security hardening guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-pinned-actions). Dependabot will track and update these pinned versions automatically.
 
 Failing PRs will be blocked. AI agents should iterate until CI passes.
