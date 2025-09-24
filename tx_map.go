@@ -72,6 +72,8 @@ type TxMap interface {
 	Length() int
 	Put(hash chainhash.Hash, value uint64) error
 	PutMulti(hashes []chainhash.Hash, value uint64) error
+	Set(hash chainhash.Hash, value uint64) error
+	Iter(f func(hash chainhash.Hash, value uint64) bool)
 }
 
 // Uint64 is a map that stores uint64's and associated uint64 value.
@@ -91,6 +93,7 @@ type TxHashMap interface {
 	Length() int
 	Put(hash chainhash.Hash) error
 	PutMulti(hashes []chainhash.Hash) error
+	Iter(f func(hash chainhash.Hash, value uint64) bool)
 }
 
 // SwissMap is a simple concurrent-safe map that uses the swiss package
@@ -255,6 +258,20 @@ func (s *SwissMap) Map() TxHashMap {
 	return s
 }
 
+// Iter iterates over all key-value pairs in the map and applies the provided function to each pair.
+// Stops iterating if the function returns true.
+//
+// Params:
+//   - f: A function that takes a hash and its associated value (always 0 in this map).
+func (s *SwissMap) Iter(f func(hash chainhash.Hash, value uint64) bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	s.m.Iter(func(k chainhash.Hash, _ struct{}) (stop bool) {
+		return f(k, 0)
+	})
+}
+
 // SwissMapUint64 is a concurrent-safe map that uses the swiss package to store
 // transaction hashes as keys and uint64 values.
 type SwissMapUint64 struct {
@@ -357,6 +374,28 @@ func (s *SwissMapUint64) PutMulti(hashes []chainhash.Hash, n uint64) error {
 	return nil
 }
 
+// Set updates the value associated with the given hash in the map.
+// It will error out if the hash does not exist.
+//
+// Params:
+//   - hash: The hash to update in the map.
+//   - value: The value to associate with the hash (not used in this map).
+//
+// Returns:
+//   - error: An error if the hash does not exist in the map, nil otherwise.
+func (s *SwissMapUint64) Set(hash chainhash.Hash, value uint64) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if !s.m.Has(hash) {
+		return fmt.Errorf("%w: %v", ErrHashDoesNotExist, hash)
+	}
+
+	s.m.Put(hash, value)
+
+	return nil
+}
+
 // Get retrieves the uint64 value associated with the given hash from the map.
 // It locks the map for reading, checks if the hash exists, and returns the value and a boolean indicating success.
 // If the hash does not exist, it returns 0 and false.
@@ -409,6 +448,20 @@ func (s *SwissMapUint64) Keys() []chainhash.Hash {
 	})
 
 	return keys
+}
+
+// Iter iterates over all key-value pairs in the map and applies the provided function to each pair.
+// Stops iterating if the function returns true.
+//
+// Params:
+//   - f: A function that takes a hash and its associated uint64 value.
+func (s *SwissMapUint64) Iter(f func(hash chainhash.Hash, value uint64) bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	s.m.Iter(func(k chainhash.Hash, v uint64) (stop bool) {
+		return f(k, v)
+	})
 }
 
 // Delete removes a hash from the map. It decrements the length of the map.
@@ -650,6 +703,18 @@ func (g *SplitSwissMap) PutMultiBucket(bucket uint16, hashes []chainhash.Hash, n
 	return g.m[bucket].PutMulti(hashes, n)
 }
 
+// Set updates the value associated with the given hash in the map.
+//
+// Params:
+//   - hash: The hash to update in the map.
+//   - value: The value to associate with the hash.
+//
+// Returns:
+//   - error: An error if the hash does not exist in the map, nil otherwise.
+func (g *SplitSwissMap) Set(hash chainhash.Hash, value uint64) error {
+	return g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].Set(hash, value)
+}
+
 // Keys returns a slice of all hashes currently stored in the map.
 // It iterates over all buckets and collects the keys from each bucket.
 // The order of keys is not guaranteed.
@@ -718,6 +783,17 @@ func (g *SplitSwissMap) Map() *SwissMapUint64 {
 	}
 
 	return m
+}
+
+// Iter iterates over all key-value pairs in the map and applies the provided function to each pair.
+// Stops iterating if the function returns true.
+//
+// Params:
+//   - f: A function that takes a hash and its associated uint64 value.
+func (g *SplitSwissMap) Iter(f func(hash chainhash.Hash, value uint64) bool) {
+	for i := uint16(0); i <= g.nrOfBuckets; i++ {
+		g.m[i].Iter(f)
+	}
 }
 
 // SplitSwissMapUint64 is a map that splits the data into multiple buckets to reduce contention.
@@ -805,6 +881,19 @@ func (g *SplitSwissMapUint64) PutMulti(hashes []chainhash.Hash, n uint64) error 
 	return nil
 }
 
+// Set updates the value associated with the given hash in the map.
+// It will error out if the hash does not exist.
+//
+// Params:
+//   - hash: The hash to update in the map.
+//   - value: The value to associate with the hash.
+//
+// Returns:
+//   - error: An error if the hash does not exist in the map, nil otherwise.
+func (g *SplitSwissMapUint64) Set(hash chainhash.Hash, value uint64) error {
+	return g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].Set(hash, value)
+}
+
 // Get retrieves the uint64 value associated with the given hash from the map.
 // It calculates the bucket index using the Bytes2Uint16Buckets function and retrieves the value from the corresponding bucket.
 //
@@ -816,6 +905,17 @@ func (g *SplitSwissMapUint64) PutMulti(hashes []chainhash.Hash, n uint64) error 
 //   - bool: True if the hash was found in the map, false otherwise.
 func (g *SplitSwissMapUint64) Get(hash chainhash.Hash) (uint64, bool) {
 	return g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].Get(hash)
+}
+
+// Iter iterates over all key-value pairs in the map and applies the provided function to each pair.
+// Stops iterating if the function returns true.
+//
+// Params:
+//   - f: A function that takes a hash and its associated uint64 value.
+func (g *SplitSwissMapUint64) Iter(f func(hash chainhash.Hash, value uint64) bool) {
+	for i := uint16(0); i <= g.nrOfBuckets; i++ {
+		g.m[i].Iter(f)
+	}
 }
 
 // Length returns the current number of hashes in the map.

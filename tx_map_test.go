@@ -277,6 +277,27 @@ func testTxMap(t *testing.T, m TxMap) {
 	assert.False(t, ok)
 
 	assert.Equal(t, 3, m.Length())
+
+	err = m.Set([32]byte{0x02, 0x01}, uint64(2))
+	require.Error(t, err, "cannot set a key that does not exist")
+
+	err = m.Set([32]byte{0x03, 0x01}, uint64(3))
+	require.NoError(t, err)
+
+	ok = m.Exists([32]byte{0x03, 0x01})
+	assert.True(t, ok)
+
+	val, ok = m.Get([32]byte{0x03, 0x01})
+	assert.True(t, ok)
+	assert.Equal(t, uint64(3), val)
+
+	nrOfKeys := 0
+	m.Iter(func(key chainhash.Hash, value uint64) bool {
+		nrOfKeys++
+
+		return false
+	})
+	assert.Equal(t, 3, nrOfKeys)
 }
 
 // testTxMapUint64 tests the basic operations of a Uint64 map implementation.
