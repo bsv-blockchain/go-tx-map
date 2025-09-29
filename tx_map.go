@@ -547,7 +547,7 @@ func (s *SwissLockFreeMapUint64) Exists(hash uint64) bool {
 //   - error: An error if the hash already exists in the map, nil otherwise.
 //
 // Attn: This method does not lock the map, so it is not suitable for concurrent access.
-func (s *SwissLockFreeMapUint64) Put(hash uint64, n uint64) error {
+func (s *SwissLockFreeMapUint64) Put(hash, n uint64) error {
 	exists := s.m.Has(hash)
 	if exists {
 		return ErrHashAlreadyExists

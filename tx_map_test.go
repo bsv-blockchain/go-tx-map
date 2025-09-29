@@ -292,7 +292,8 @@ func testTxMap(t *testing.T, m TxMap) {
 	assert.Equal(t, uint64(3), val)
 
 	nrOfKeys := 0
-	m.Iter(func(key chainhash.Hash, value uint64) bool {
+
+	m.Iter(func(_ chainhash.Hash, _ uint64) bool {
 		nrOfKeys++
 
 		return false
@@ -430,6 +431,7 @@ func TestSplitSwissMapDelete(t *testing.T) {
 				hash := chainhash.Hash{0x00, 0x03}
 				bucket := Bytes2Uint16Buckets(hash, m.nrOfBuckets)
 				delete(m.m, bucket)
+
 				return hash
 			},
 			wantErr: ErrBucketDoesNotExist,
@@ -446,6 +448,7 @@ func TestSplitSwissMapDelete(t *testing.T) {
 			prepare: func(m *SplitSwissMap) chainhash.Hash {
 				hash := chainhash.Hash{0x00, 0x07}
 				require.NoError(t, m.Put(hash, 1))
+
 				return hash
 			},
 			wantErr: nil,
