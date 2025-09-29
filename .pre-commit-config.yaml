@@ -11,9 +11,7 @@
 #    • Commit messages are validated against Conventional Commits
 #      extended with the prefixes listed in AGENTS.md
 # ----------------------------------------------------------------------
-
 minimum_pre_commit_version: "3.7.0" # requires Python‑based hooks v2.0+
-
 repos:
   # ---------------------- Core hygiene hooks --------------------------
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -23,7 +21,6 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
       - id: check-merge-conflict
-
   # ------------------------- Go toolchain -----------------------------
   - repo: https://github.com/TekWizely/pre-commit-golang
     rev: bf2137dcd61fa219107613e4a4103cf24540cd93 # frozen: v1.0.0-rc.2
@@ -34,14 +31,12 @@ repos:
       - id: go-imports
       - id: golangci-lint
       - id: go-mod-tidy
-
   # ------------------------ Security scans ---------------------------
   - repo: https://github.com/zricethezav/gitleaks
     rev: 39fdb480a06768cc41a84ef86959c07ff33091c4 # frozen: v8.28.0
     hooks:
       - id: gitleaks
         stages: [pre-commit, pre-push]
-
   # ------------------- Commenting rule enforcement -------------------
   - repo: local
     hooks:
@@ -52,7 +47,6 @@ repos:
           bash -c 'revive -config .revive.toml ./...'
         types: [go]
         fail_fast: true
-
       - id: comment-conventions
         name: "custom comment linter (AGENTS.md)"
         language: python
@@ -62,7 +56,6 @@ repos:
         additional_dependencies:
           - regex==2024.11.6
           - ruamel.yaml==0.18.18
-
   # --------------------- Commit‑msg validation -----------------------
   - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
     rev: 879f5400493f84c8b683bdeb3366a8439ca17858 # frozen: v9.22.0
@@ -70,5 +63,4 @@ repos:
       - id: commitlint
         stages: [commit-msg]
         additional_dependencies: ["@commitlint/config-conventional"]
-
 default_stages: [pre-commit, pre-push]

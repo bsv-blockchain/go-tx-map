@@ -22,9 +22,7 @@
 #   • PR limit = 10 to avoid queue flooding.
 #   • All dependency PRs require passing CI + CODEOWNERS review.
 # ────────────────────────────────────────────────────────────────
-
 version: 2
-
 updates:
   # ──────────────────────────────────────────────────────────────
   # 1. Go Modules (go.mod / go.sum)
@@ -54,7 +52,6 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
-
   # ──────────────────────────────────────────────────────────────
   # 2. GitHub Actions Workflows
   # ──────────────────────────────────────────────────────────────
@@ -77,7 +74,6 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
-
   # ──────────────────────────────────────────────────────────────
   # 3. DevContainer (devcontainer.json : base image + features)
   # ──────────────────────────────────────────────────────────────
