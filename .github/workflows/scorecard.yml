@@ -1,7 +1,6 @@
 # This workflow uses actions that GitHub does not certify. They are provided
 # by a third-party and are governed by separate terms of service, privacy
 # policy, and support documentation.
-
 name: Scorecard supply-chain security
 on:
   # For Branch-Protection check. Only the default branch is supported. See
@@ -13,16 +12,13 @@ on:
     - cron: "0 8 * * 1" # Every Monday at 08:00 UTC
   push:
     branches: ["master"]
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
-
 # Declare default permissions as read-only.
 permissions:
   contents: read
   security-events: read # For scorecard analysis
-
 jobs:
   analysis:
     name: Scorecard analysis
@@ -37,13 +33,11 @@ jobs:
       # Uncomment the permissions below if installing in a private repository.
       # contents: read
       # actions: read
-
     steps:
       - name: "Checkout code"
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
-
       - name: "Run analysis"
         uses: ossf/scorecard-action@05b42c624433fc40578a4040d5cf5e36ddca8cde # v2.4.2
         with:
@@ -63,10 +57,8 @@ jobs:
           #   - `publish_results` will always be set to `false`, regardless
           #     of the value entered here.
           publish_results: true
-
           # (Optional) Uncomment file_mode if you have a .gitattributes with files marked export-ignore
           # file_mode: git
-
       # Upload the results as artifacts (optional). Commenting out will disable uploads of run results in SARIF
       # format to the repository Actions tab.
       - name: "Upload artifact"
@@ -75,7 +67,6 @@ jobs:
           name: SARIF file
           path: results.sarif
           retention-days: 5
-
       # Upload the results to GitHub's code scanning dashboard (optional).
       # Commenting out will disable the upload of results to your repo's Code Scanning dashboard
       - name: "Upload to code-scanning"

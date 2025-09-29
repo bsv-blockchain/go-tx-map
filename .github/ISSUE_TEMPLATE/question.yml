@@ -13,7 +13,6 @@ body:
       placeholder: I'm wondering about the behavior of the package.XYZ function when...
     validations:
       required: true
-
   - type: textarea
     id: additional_context
     attributes:

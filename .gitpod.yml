@@ -2,10 +2,8 @@
 # This file creates a repeatable cloud development environment.
 # It ensures dependencies are installed and the codebase is vetted
 # and tested on workspace start.
-
 image:
   name: gitpod/workspace-full:1.0.0
-
 tasks:
   - name: setup-and-test
     init: |
@@ -22,12 +20,10 @@ tasks:
       go vet ./...
     command: |
       go test ./...
-
 ports:
   - port: 8080
     onOpen: open-preview
     description: Application
-
 vscode:
   extensions:
     - golang.go

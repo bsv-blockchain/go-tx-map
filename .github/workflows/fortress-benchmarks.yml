@@ -7,9 +7,7 @@
 #  Maintainer: @mrz1836
 #
 # ------------------------------------------------------------------------------------
-
 name: GoFortress (Benchmark Suite)
-
 on:
   workflow_call:
     inputs:
@@ -37,10 +35,8 @@ on:
       github-token:
         description: "GitHub token for API access"
         required: true
-
 permissions:
   contents: read
-
 jobs:
   # ----------------------------------------------------------------------------------
   # Benchmark Matrix for Go (Parallel)
@@ -52,7 +48,6 @@ jobs:
       fail-fast: false # Continue running other benchmarks if one fails
       matrix: ${{ fromJSON(inputs.benchmark-matrix) }}
     runs-on: ${{ matrix.os }}
-
     steps:
       # ————————————————————————————————————————————————————————————————
       # Parse environment variables
@@ -65,19 +60,16 @@ jobs:
           echo "$ENV_JSON" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"' | while IFS='=' read -r key value; do
             echo "$key=$value" >> $GITHUB_ENV
           done
-
       # ————————————————————————————————————————————————————————————————
       # Checkout code and set up Go environment
       # ————————————————————————————————————————————————————————————————
       - name: 📥 Checkout code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-
       - name: 🔧 Set Go cache paths (cross-platform)
         run: |
           echo "🔧 Setting up Go cache paths..."
           echo "GOCACHE=$HOME/.cache/go-build"        >> $GITHUB_ENV
           echo "GOMODCACHE=$HOME/go/pkg/mod"          >> $GITHUB_ENV
-
       # ————————————————————————————————————————————————————————————————
       # Restore Go module and build caches
       # ————————————————————————————————————————————————————————————————
@@ -89,7 +81,6 @@ jobs:
           key: ${{ matrix.os }}-gomod-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ matrix.os }}-gomod-
-
       # ————————————————————————————————————————————————————————————————
       # Restore the build cache
       # ————————————————————————————————————————————————————————————————
@@ -103,7 +94,6 @@ jobs:
           key: ${{ matrix.os }}-gobuild-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ matrix.os }}-gobuild-${{ matrix.go-version }}-
-
       # ————————————————————————————————————————————————————————————————
       # Check go.mod required version before setting up Go
       # ————————————————————————————————————————————————————————————————
@@ -137,7 +127,6 @@ jobs:
               fi
             fi
           fi
-
       # ————————————————————————————————————————————————————————————————
       # Determine Go Toolchain Mode and set up Go
       # ————————————————————————————————————————————————————————————————
@@ -156,14 +145,12 @@ jobs:
           else
             echo "Not setting GOTOOLCHAIN (using default)"
           fi
-
       - name: 🏗️ Set up Go
         id: setup-go-bench
         uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
         with:
           go-version: ${{ matrix.go-version }}
           cache: false # we handle caches ourselves
-
       # ————————————————————————————————————————————————————————————————
       # Start benchmark timer
       # ————————————————————————————————————————————————————————————————
@@ -171,7 +158,6 @@ jobs:
         id: bench-timer
         run: |
           echo "bench-start=$(date +%s)" >> $GITHUB_OUTPUT
-
       # ————————————————————————————————————————————————————————————————
       # Run benchmarks and capture output
       # ————————————————————————————————————————————————————————————————
@@ -198,90 +184,13 @@ jobs:
 
           # Save status for later
           echo "bench_status=$BENCH_STATUS" >> $GITHUB_OUTPUT
-
       # ————————————————————————————————————————————————————————————————
       # Parse benchmark results and create statistics
       # ————————————————————————————————————————————————————————————————
       - name: 📊 Parse benchmark statistics
         id: bench-summary
         if: always()
-        run: |
-          BENCH_END=$(date +%s)
-          BENCH_DURATION=$((BENCH_END - ${{ steps.bench-timer.outputs.bench-start }}))
-
-          # Count benchmarks
-          BENCHMARK_COUNT=$(find . -type f -name '*_test.go' \
-            -not -path './vendor/*' \
-            -not -path './third_party/*' \
-            -exec grep -h '^func Benchmark' {} + | wc -l)
-
-          # Parse benchmark results
-          BENCH_OUTPUT_FILE="benchmark-results-${{ matrix.os }}-${{ matrix.go-version }}.txt"
-          STATS_FILE="benchmark-stats-${{ matrix.os }}-${{ matrix.go-version }}.json"
-
-          # Create a pretty summary of benchmark results
-          BENCH_SUMMARY=""
-          if [ -f "$BENCH_OUTPUT_FILE" ]; then
-            # Step 1: Extract benchmark result lines using a more specific pattern
-            # Expected format: BenchmarkName-N  iterations  ns/op  [B/op]  [allocs/op]
-            # Example: BenchmarkMyFunc-8  1000000  1234.5 ns/op  56 B/op  2 allocs/op
-            
-            # Primary pattern: Match benchmark name with dash-number, iterations, and ns/op
-            BENCH_LINES=$(grep -E '^Benchmark[A-Za-z0-9_-]+-[0-9]+\s+[0-9]+\s+[0-9.]+ ns/op' "$BENCH_OUTPUT_FILE" || true)
-            
-            if [ -n "$BENCH_LINES" ]; then
-              BENCH_SUMMARY=$(echo "$BENCH_LINES" | while read -r line; do
-                # Step 2: Parse each component of the benchmark line
-                
-                # Extract benchmark name (remove the -N suffix where N is the GOMAXPROCS)
-                BENCH_NAME=$(echo "$line" | awk '{print $1}' | sed 's/-[0-9]*$//')
-                
-                # Extract iteration count (second field)
-                ITERATIONS=$(echo "$line" | awk '{print $2}')
-                
-                # Extract nanoseconds per operation (third field)
-                NS_PER_OP=$(echo "$line" | awk '{print $3}')
-                
-                # Step 3: Extract optional memory metrics using targeted grep
-                # Look for "X B/op" pattern (bytes per operation)
-                B_PER_OP=$(echo "$line" | grep -oE '[0-9.]+ B/op' | awk '{print $1}' || echo "N/A")
-                
-                # Look for "X allocs/op" pattern (allocations per operation)  
-                ALLOCS_PER_OP=$(echo "$line" | grep -oE '[0-9.]+ allocs/op' | awk '{print $1}' || echo "N/A")
-                
-                # Step 4: Format the summary line
-                echo "- **$BENCH_NAME**: $NS_PER_OP ns/op, $B_PER_OP B/op, $ALLOCS_PER_OP allocs/op ($ITERATIONS iterations)"
-              done)
-            fi
-          fi
-
-          # Escape the summary for JSON
-          BENCH_SUMMARY_JSON=$(echo "$BENCH_SUMMARY" | jq -Rsa .)
-
-          # Create statistics file using jq to safely construct JSON
-          jq -n \
-            --arg name "${{ matrix.name }}" \
-            --arg os "${{ matrix.os }}" \
-            --arg go_version "${{ matrix.go-version }}" \
-            --argjson duration_seconds "$BENCH_DURATION" \
-            --argjson benchmark_count "$BENCHMARK_COUNT" \
-            --arg status "${{ steps.run-benchmarks.outputs.bench_status }}" \
-            --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            --argjson benchmark_summary "$BENCH_SUMMARY_JSON" \
-            '{
-              "name": $name,
-              "os": $os,
-              "go_version": $go_version,
-              "duration_seconds": $duration_seconds,
-              "benchmark_count": $benchmark_count,
-              "status": $status,
-              "timestamp": $timestamp,
-              "benchmark_summary": $benchmark_summary
-            }' > "$STATS_FILE"
-
-          echo "📊 Benchmark statistics:"
-          jq . "$STATS_FILE"
-
+        run: "BENCH_END=$(date +%s)\nBENCH_DURATION=$((BENCH_END - ${{ steps.bench-timer.outputs.bench-start }}))\n\n# Count benchmarks\nBENCHMARK_COUNT=$(find . -type f -name '*_test.go' \\\n  -not -path './vendor/*' \\\n  -not -path './third_party/*' \\\n  -exec grep -h '^func Benchmark' {} + | wc -l)\n\n# Parse benchmark results\nBENCH_OUTPUT_FILE=\"benchmark-results-${{ matrix.os }}-${{ matrix.go-version }}.txt\"\nSTATS_FILE=\"benchmark-stats-${{ matrix.os }}-${{ matrix.go-version }}.json\"\n\n# Create a pretty summary of benchmark results\nBENCH_SUMMARY=\"\"\nif [ -f \"$BENCH_OUTPUT_FILE\" ]; then\n  # Step 1: Extract benchmark result lines using a more specific pattern\n  # Expected format: BenchmarkName-N  iterations  ns/op  [B/op]  [allocs/op]\n  # Example: BenchmarkMyFunc-8  1000000  1234.5 ns/op  56 B/op  2 allocs/op\n  \n  # Primary pattern: Match benchmark name with dash-number, iterations, and ns/op\n  BENCH_LINES=$(grep -E '^Benchmark[A-Za-z0-9_-]+-[0-9]+\\s+[0-9]+\\s+[0-9.]+ ns/op' \"$BENCH_OUTPUT_FILE\" || true)\n  \n  if [ -n \"$BENCH_LINES\" ]; then\n    BENCH_SUMMARY=$(echo \"$BENCH_LINES\" | while read -r line; do\n      # Step 2: Parse each component of the benchmark line\n      \n      # Extract benchmark name (remove the -N suffix where N is the GOMAXPROCS)\n      BENCH_NAME=$(echo \"$line\" | awk '{print $1}' | sed 's/-[0-9]*$//')\n      \n      # Extract iteration count (second field)\n      ITERATIONS=$(echo \"$line\" | awk '{print $2}')\n      \n      # Extract nanoseconds per operation (third field)\n      NS_PER_OP=$(echo \"$line\" | awk '{print $3}')\n      \n      # Step 3: Extract optional memory metrics using targeted grep\n      # Look for \"X B/op\" pattern (bytes per operation)\n      B_PER_OP=$(echo \"$line\" | grep -oE '[0-9.]+ B/op' | awk '{print $1}' || echo \"N/A\")\n      \n      # Look for \"X allocs/op\" pattern (allocations per operation)  \n      ALLOCS_PER_OP=$(echo \"$line\" | grep -oE '[0-9.]+ allocs/op' | awk '{print $1}' || echo \"N/A\")\n      \n      # Step 4: Format the summary line\n      echo \"- **$BENCH_NAME**: $NS_PER_OP ns/op, $B_PER_OP B/op, $ALLOCS_PER_OP allocs/op ($ITERATIONS iterations)\"\n    done)\n  fi\nfi\n\n# Escape the summary for JSON\nBENCH_SUMMARY_JSON=$(echo \"$BENCH_SUMMARY\" | jq -Rsa .)\n\n# Create statistics file using jq to safely construct JSON\njq -n \\\n  --arg name \"${{ matrix.name }}\" \\\n  --arg os \"${{ matrix.os }}\" \\\n  --arg go_version \"${{ matrix.go-version }}\" \\\n  --argjson duration_seconds \"$BENCH_DURATION\" \\\n  --argjson benchmark_count \"$BENCHMARK_COUNT\" \\\n  --arg status \"${{ steps.run-benchmarks.outputs.bench_status }}\" \\\n  --arg timestamp \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\" \\\n  --argjson benchmark_summary \"$BENCH_SUMMARY_JSON\" \\\n  '{\n    \"name\": $name,\n    \"os\": $os,\n    \"go_version\": $go_version,\n    \"duration_seconds\": $duration_seconds,\n    \"benchmark_count\": $benchmark_count,\n    \"status\": $status,\n    \"timestamp\": $timestamp,\n    \"benchmark_summary\": $benchmark_summary\n  }' > \"$STATS_FILE\"\n\necho \"📊 Benchmark statistics:\"\njq . \"$STATS_FILE\"\n"
       # ————————————————————————————————————————————————————————————————
       # Upload benchmark statistics
       # ————————————————————————————————————————————————————————————————
@@ -292,7 +201,6 @@ jobs:
           name: benchmark-stats-${{ matrix.os }}-${{ matrix.go-version }}
           path: benchmark-stats-*.json
           retention-days: 1
-
       # ————————————————————————————————————————————————————————————————
       # Upload raw benchmark results
       # ————————————————————————————————————————————————————————————————

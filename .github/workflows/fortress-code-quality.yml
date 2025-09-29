@@ -7,9 +7,7 @@
 #  Maintainer: @mrz1836
 #
 # ------------------------------------------------------------------------------------
-
 name: GoFortress (Code Quality)
-
 on:
   workflow_call:
     inputs:
@@ -48,10 +46,8 @@ on:
       github-token:
         description: "GitHub token for API access"
         required: true
-
 permissions:
   contents: read
-
 jobs:
   # ----------------------------------------------------------------------------------
   # Go Vet (Static Analysis)
@@ -72,20 +68,17 @@ jobs:
           echo "$ENV_JSON" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"' | while IFS='=' read -r key value; do
             echo "$key=$value" >> $GITHUB_ENV
           done
-
       # ————————————————————————————————————————————————————————————————
       # Checkout code and set up Go environment
       # ————————————————————————————————————————————————————————————————
       - name: 📥 Checkout code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-
       - name: 🔧 Set Go cache paths (cross-platform)
         run: |
           echo "🔧 Setting up Go cache paths..."
           echo "GOCACHE=$HOME/.cache/go-build"        >> $GITHUB_ENV
           echo "GOMODCACHE=$HOME/go/pkg/mod"          >> $GITHUB_ENV
           echo "GOLANGCI_LINT_CACHE=$HOME/.cache/golangci-lint" >> $GITHUB_ENV
-
       # ————————————————————————————————————————————————————————————————
       # Restore Go module and build caches
       # ————————————————————————————————————————————————————————————————
@@ -97,7 +90,6 @@ jobs:
           key: ${{ inputs.primary-runner }}-gomod-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ inputs.primary-runner }}-gomod-
-
       # ————————————————————————————————————————————————————————————————
       # # Restore the build cache and test cache
       # ————————————————————————————————————————————————————————————————
@@ -111,7 +103,6 @@ jobs:
           key: ${{ inputs.primary-runner }}-gobuild-${{ inputs.go-primary-version }}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ inputs.primary-runner }}-gobuild-${{ inputs.go-primary-version }}-
-
       # ————————————————————————————————————————————————————————————————
       # Set up Go environment
       # ————————————————————————————————————————————————————————————————
@@ -121,7 +112,6 @@ jobs:
         with:
           go-version: ${{ inputs.go-primary-version }}
           cache: false # we handle caches ourselves
-
       # ————————————————————————————————————————————————————————————————
       # Run go vet with parallel execution
       # ————————————————————————————————————————————————————————————————
@@ -130,7 +120,6 @@ jobs:
           echo "🚀 Running static analysis with go vet (parallel mode)..."
           make vet-parallel
           echo "✅ Static analysis completed successfully"
-
       # ————————————————————————————————————————————————————————————————
       # Summary of Go vet results
       # ————————————————————————————————————————————————————————————————
@@ -146,7 +135,6 @@ jobs:
           echo "| **Result** | ✅ No issues found |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "🎯 **All packages passed static analysis checks.**" >> $GITHUB_STEP_SUMMARY
-
   # ----------------------------------------------------------------------------------
   # Lint (Code Linting)
   # ----------------------------------------------------------------------------------
@@ -168,20 +156,17 @@ jobs:
           echo "$ENV_JSON" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"' | while IFS='=' read -r key value; do
             echo "$key=$value" >> $GITHUB_ENV
           done
-
       # ————————————————————————————————————————————————————————————————
       # Checkout code and set up Go environment
       # ————————————————————————————————————————————————————————————————
       - name: 📥 Checkout code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-
       - name: 🔧 Set Go cache paths (cross-platform)
         run: |
           echo "🔧 Setting up Go cache paths..."
           echo "GOCACHE=$HOME/.cache/go-build"        >> $GITHUB_ENV
           echo "GOMODCACHE=$HOME/go/pkg/mod"          >> $GITHUB_ENV
           echo "GOLANGCI_LINT_CACHE=$HOME/.cache/golangci-lint" >> $GITHUB_ENV
-
       # ————————————————————————————————————————————————————————————————
       # Extract golangci-lint version from Makefile
       # ————————————————————————————————————————————————————————————————
@@ -195,7 +180,6 @@ jobs:
           fi
           echo "✅ Found golangci-lint version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-
       # ————————————————————————————————————————————————————————————————
       # Restore Go module and build caches
       # ————————————————————————————————————————————————————————————————
@@ -207,7 +191,6 @@ jobs:
           key: ${{ inputs.primary-runner }}-gomod-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ inputs.primary-runner }}-gomod-
-
       # ————————————————————————————————————————————————————————————————
       # Restore the build cache and test cache
       # ————————————————————————————————————————————————————————————————
@@ -221,7 +204,6 @@ jobs:
           key: ${{ inputs.primary-runner }}-gobuild-${{ inputs.go-primary-version }}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ inputs.primary-runner }}-gobuild-${{ inputs.go-primary-version }}-
-
       # ————————————————————————————————————————————————————————————————
       # Set up Go environment
       # ————————————————————————————————————————————————————————————————
@@ -231,7 +213,6 @@ jobs:
         with:
           go-version: ${{ inputs.go-primary-version }}
           cache: false
-
       # ————————————————————————————————————————————————————————————————
       # Restore Cache golangci-lint
       # ————————————————————————————————————————————————————————————————
@@ -244,14 +225,12 @@ jobs:
           restore-keys: |
             ${{ inputs.primary-runner }}-golangci-lint-analysis-${{ hashFiles('.golangci.json', '**/go.sum') }}
             ${{ inputs.primary-runner }}-golangci-lint-analysis-
-
       - name: 🔍 Debug cache usage
         run: |
           echo "🔍 Module cache size: $(du -sh $GOMODCACHE 2>/dev/null | cut -f1 || echo 'N/A')"
           echo "🔍 Build cache size: $(du -sh $GOCACHE 2>/dev/null | cut -f1 || echo 'N/A')"
           echo "🔍 Lint cache size: $(du -sh $GOLANGCI_LINT_CACHE 2>/dev/null | cut -f1 || echo 'N/A')"
           echo "🔍 Checking if vendor directory exists: $(ls -la | grep vendor || echo 'No vendor directory')"
-
       # ————————————————————————————————————————————————————————————————
       # Run golangci-lint
       # ————————————————————————————————————————————————————————————————
@@ -271,7 +250,6 @@ jobs:
           make lint
 
           echo "✅ Code linting completed successfully"
-
       # ————————————————————————————————————————————————————————————————
       # Summary of golangci-lint results
       # ————————————————————————————————————————————————————————————————
@@ -287,7 +265,6 @@ jobs:
           echo "| **Result** | ✅ All checks passed |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "🎯 **Code quality standards met - no linting issues found.**" >> $GITHUB_STEP_SUMMARY
-
   # ----------------------------------------------------------------------------------
   # YAML Validation (Linting)
   # ----------------------------------------------------------------------------------
@@ -309,7 +286,6 @@ jobs:
           echo "$ENV_JSON" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"' | while IFS='=' read -r key value; do
             echo "$key=$value" >> $GITHUB_ENV
           done
-
       # ————————————————————————————————————————————————————————————————
       # Checkout code with full history for proper ignore file handling
       # ————————————————————————————————————————————————————————————————
@@ -317,7 +293,6 @@ jobs:
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           fetch-depth: 0 # Full history for prettier ignores files
-
       # ————————————————————————————————————————————————————————————————
       # Check for required .prettierignore file
       # ————————————————————————————————————————————————————————————————
@@ -336,7 +311,6 @@ jobs:
             echo "  - .prettierignore (root directory)"
             exit 1
           fi
-
       # ————————————————————————————————————————————————————————————————
       # Set up Node.js (no caching since we don't have package.json)
       # ————————————————————————————————————————————————————————————————
@@ -344,7 +318,6 @@ jobs:
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v4.0.4
         with:
           node-version: ${{ env.NODE_VERSION }}
-
       # ————————————————————————————————————————————————————————————————
       # Create package.json with pinned prettier and install securely
       # ————————————————————————————————————————————————————————————————
@@ -359,7 +332,6 @@ jobs:
             }
           }" > package.json
           echo "✅ Package.json created"
-
       # ————————————————————————————————————————————————————————————————
       # Install Prettier using existing local installation if available
       # ————————————————————————————————————————————————————————————————
@@ -384,7 +356,6 @@ jobs:
           echo "📌 Prettier version: $PRETTIER_VERSION"
           echo "version=$PRETTIER_VERSION" >> $GITHUB_OUTPUT
         id: prettier-version
-
       # ————————————————————————————————————————————————————————————————
       # List YAML files to be checked (for transparency)
       # ————————————————————————————————————————————————————————————————
@@ -414,7 +385,6 @@ jobs:
           echo "   • Files that would be processed: $PROCESSED_YAML"
           echo "   • Files needing formatting: $CHECKED_YAML"
           echo "   • Files ignored by prettier: $((TOTAL_YAML - PROCESSED_YAML))"
-
       # ————————————————————————————————————————————————————————————————
       # Run Prettier in check mode against YAML files
       # ————————————————————————————————————————————————————————————————
@@ -436,7 +406,6 @@ jobs:
           fi
 
           exit $PRETTIER_EXIT_CODE
-
       # ————————————————————————————————————————————————————————————————
       # Show detailed diff when check fails (helpful for debugging)
       # ————————————————————————————————————————————————————————————————
@@ -491,38 +460,12 @@ jobs:
 
           # Exit with failure
           exit 1
-
       # ————————————————————————————————————————————————————————————————
       # Job Summary
       # ————————————————————————————————————————————————————————————————
       - name: 📊 Job Summary
         if: success()
-        run: |
-          echo "## 📐 YAML Validation Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔍 Validation Details | ✅ Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| **Tool** | Prettier (EditorConfig-aware) |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Version** | ${{ steps.prettier-version.outputs.version }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Configuration** | .editorconfig rules |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Scope** | All .yml and .yaml files |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Result** | ✅ All files properly formatted |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📊 File Processing Statistics" >> $GITHUB_STEP_SUMMARY
-          echo "- **Total YAML files found**: ${{ env.TOTAL_YAML }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Files processed by prettier**: ${{ env.PROCESSED_YAML }}" >> $GITHUB_STEP_SUMMARY  
-          echo "- **Files needing formatting**: ${{ env.CHECKED_YAML }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Files ignored by prettier**: $((${{ env.TOTAL_YAML }} - ${{ env.PROCESSED_YAML }}))" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📋 EditorConfig YAML Rules Applied" >> $GITHUB_STEP_SUMMARY
-          echo "- **Indent Style**: Spaces" >> $GITHUB_STEP_SUMMARY
-          echo "- **Indent Size**: 2" >> $GITHUB_STEP_SUMMARY
-          echo "- **Line Endings**: LF" >> $GITHUB_STEP_SUMMARY
-          echo "- **Final Newline**: Required" >> $GITHUB_STEP_SUMMARY
-          echo "- **Trailing Whitespace**: Trimmed" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🎯 **All YAML files meet formatting standards.**" >> $GITHUB_STEP_SUMMARY
-
+        run: "echo \"## 📐 YAML Validation Summary\" >> $GITHUB_STEP_SUMMARY\necho \"\" >> $GITHUB_STEP_SUMMARY\necho \"| 🔍 Validation Details | ✅ Status |\" >> $GITHUB_STEP_SUMMARY\necho \"|---|---|\" >> $GITHUB_STEP_SUMMARY\necho \"| **Tool** | Prettier (EditorConfig-aware) |\" >> $GITHUB_STEP_SUMMARY\necho \"| **Version** | ${{ steps.prettier-version.outputs.version }} |\" >> $GITHUB_STEP_SUMMARY\necho \"| **Configuration** | .editorconfig rules |\" >> $GITHUB_STEP_SUMMARY\necho \"| **Scope** | All .yml and .yaml files |\" >> $GITHUB_STEP_SUMMARY\necho \"| **Result** | ✅ All files properly formatted |\" >> $GITHUB_STEP_SUMMARY\necho \"\" >> $GITHUB_STEP_SUMMARY\necho \"### 📊 File Processing Statistics\" >> $GITHUB_STEP_SUMMARY\necho \"- **Total YAML files found**: ${{ env.TOTAL_YAML }}\" >> $GITHUB_STEP_SUMMARY\necho \"- **Files processed by prettier**: ${{ env.PROCESSED_YAML }}\" >> $GITHUB_STEP_SUMMARY  \necho \"- **Files needing formatting**: ${{ env.CHECKED_YAML }}\" >> $GITHUB_STEP_SUMMARY\necho \"- **Files ignored by prettier**: $((${{ env.TOTAL_YAML }} - ${{ env.PROCESSED_YAML }}))\" >> $GITHUB_STEP_SUMMARY\necho \"\" >> $GITHUB_STEP_SUMMARY\necho \"### 📋 EditorConfig YAML Rules Applied\" >> $GITHUB_STEP_SUMMARY\necho \"- **Indent Style**: Spaces\" >> $GITHUB_STEP_SUMMARY\necho \"- **Indent Size**: 2\" >> $GITHUB_STEP_SUMMARY\necho \"- **Line Endings**: LF\" >> $GITHUB_STEP_SUMMARY\necho \"- **Final Newline**: Required\" >> $GITHUB_STEP_SUMMARY\necho \"- **Trailing Whitespace**: Trimmed\" >> $GITHUB_STEP_SUMMARY\necho \"\" >> $GITHUB_STEP_SUMMARY\necho \"🎯 **All YAML files meet formatting standards.**\" >> $GITHUB_STEP_SUMMARY\n"
       # ————————————————————————————————————————————————————————————————
       # Cleanup
       # ————————————————————————————————————————————————————————————————
