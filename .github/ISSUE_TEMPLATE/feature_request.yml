@@ -13,7 +13,6 @@ body:
       placeholder: I'm always frustrated when I try to use X and it doesn't support Y...
     validations:
       required: true
-
   - type: textarea
     id: solution
     attributes:
@@ -22,7 +21,6 @@ body:
       placeholder: Add support for this custom function to custom map...
     validations:
       required: true
-
   - type: textarea
     id: alternatives
     attributes:
@@ -31,7 +29,6 @@ body:
       placeholder: I also considered doing this through a wrapper or middleware...
     validations:
       required: false
-
   - type: textarea
     id: context
     attributes:
