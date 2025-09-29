@@ -7,9 +7,7 @@
 #  Maintainer: @mrz1836
 #
 # ------------------------------------------------------------------------------------
-
 name: GoFortress (Performance Summary)
-
 on:
   workflow_call:
     inputs:
@@ -68,10 +66,8 @@ on:
         description: "Primary runner OS"
         required: true
         type: string
-
 permissions:
   contents: read
-
 jobs:
   # ----------------------------------------------------------------------------------
   # Performance Summary Report
@@ -91,7 +87,6 @@ jobs:
           echo "$ENV_JSON" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"' | while IFS='=' read -r key value; do
             echo "$key=$value" >> $GITHUB_ENV
           done
-
       # ————————————————————————————————————————————————————————————————
       # Download all statistics artifacts
       # ————————————————————————————————————————————————————————————————
@@ -101,7 +96,6 @@ jobs:
         with:
           pattern: "*-stats-*"
           merge-multiple: true
-
       # ————————————————————————————————————————————————————————————————
       # Generate performance report
       # ————————————————————————————————————————————————————————————————
