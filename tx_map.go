@@ -124,7 +124,7 @@ var (
 // Returns:
 //   - *SwissMap: A pointer to the newly created SwissMap instance.
 //
-// Attn: The length is not enforced, and the map can grow beyond this size.
+// Considerations: The length is not enforced, and the map can grow beyond this size.
 func NewSwissMap(length uint32) *SwissMap {
 	return &SwissMap{
 		m: swiss.NewMap[chainhash.Hash, struct{}](length),
@@ -516,7 +516,7 @@ func NewSwissLockFreeMapUint64(length int) *SwissLockFreeMapUint64 {
 // Returns:
 //   - *swiss.Map[uint64, uint64]: A pointer to the underlying swiss map.
 //
-// Attn: This method does not lock the map, so it is not suitable for concurrent access.
+// Considerations: This method does not lock the map, so it is not suitable for concurrent access.
 func (s *SwissLockFreeMapUint64) Map() *swiss.Map[uint64, uint64] {
 	return s.m
 }
@@ -529,7 +529,7 @@ func (s *SwissLockFreeMapUint64) Map() *swiss.Map[uint64, uint64] {
 // Returns:
 //   - bool: True if the hash exists in the map, false otherwise.
 //
-// Attn: This method does not lock the map, so it is not suitable for concurrent access.
+// Considerations: This method does not lock the map, so it is not suitable for concurrent access.
 func (s *SwissLockFreeMapUint64) Exists(hash uint64) bool {
 	_, ok := s.m.Get(hash)
 	return ok
@@ -546,7 +546,7 @@ func (s *SwissLockFreeMapUint64) Exists(hash uint64) bool {
 // Returns:
 //   - error: An error if the hash already exists in the map, nil otherwise.
 //
-// Attn: This method does not lock the map, so it is not suitable for concurrent access.
+// Considerations: This method does not lock the map, so it is not suitable for concurrent access.
 func (s *SwissLockFreeMapUint64) Put(hash, n uint64) error {
 	exists := s.m.Has(hash)
 	if exists {
@@ -568,7 +568,7 @@ func (s *SwissLockFreeMapUint64) Put(hash, n uint64) error {
 //   - uint64: The value associated with the hash, or 0 if the hash does not exist.
 //   - bool: True if the hash was found in the map, false otherwise.
 //
-// Attn: This method does not lock the map, so it is not suitable for concurrent access.
+// Considerations: This method does not lock the map, so it is not suitable for concurrent access.
 func (s *SwissLockFreeMapUint64) Get(hash uint64) (uint64, bool) {
 	n, ok := s.m.Get(hash)
 	if !ok {
@@ -583,7 +583,7 @@ func (s *SwissLockFreeMapUint64) Get(hash uint64) (uint64, bool) {
 // Returns:
 //   - int: The number of hashes currently stored in the map.
 //
-// Attn: This method uses atomic operations to retrieve the length, making it safe for concurrent access.
+// Considerations: This method uses atomic operations to retrieve the length, making it safe for concurrent access.
 func (s *SwissLockFreeMapUint64) Length() int {
 	return int(s.length.Load())
 }
@@ -606,7 +606,7 @@ type SplitSwissMap struct {
 // Returns:
 //   - *SplitSwissMap: A pointer to the newly created SplitSwissMap instance.
 //
-// Attn: The number of buckets is fixed at 1024, and the length is divided by this number to determine the size of each bucket.
+// Considerations: The number of buckets is fixed at 1024, and the length is divided by this number to determine the size of each bucket.
 func NewSplitSwissMap(length int) *SplitSwissMap {
 	m := &SplitSwissMap{
 		m:           make(map[uint16]*SwissMapUint64, 1024),
@@ -993,7 +993,7 @@ func NewSplitSwissLockFreeMapUint64(length int) *SplitSwissLockFreeMapUint64 {
 // Returns:
 //   - bool: True if the hash exists in the map, false otherwise.
 //
-// Attn: This method does not lock the map, so it is not suitable for concurrent access.
+// Considerations: This method does not lock the map, so it is not suitable for concurrent access.
 func (g *SplitSwissLockFreeMapUint64) Exists(hash uint64) bool {
 	return g.m[hash%g.nrOfBuckets].Exists(hash)
 }
@@ -1004,7 +1004,7 @@ func (g *SplitSwissLockFreeMapUint64) Exists(hash uint64) bool {
 // Returns:
 //   - map[uint64]*SwissLockFreeMapUint64: A map where the keys are bucket indices and the values are pointers to SwissLockFreeMapUint64 instances.
 //
-// Attn: This method does not lock the map, so it is not suitable for concurrent access.
+// Considerations: This method does not lock the map, so it is not suitable for concurrent access.
 func (g *SplitSwissLockFreeMapUint64) Map() map[uint64]*SwissLockFreeMapUint64 {
 	return g.m
 }
@@ -1020,7 +1020,7 @@ func (g *SplitSwissLockFreeMapUint64) Map() map[uint64]*SwissLockFreeMapUint64 {
 // Returns:
 //   - error: An error if the hash already exists in the map, nil otherwise.
 //
-// Attn: This method does not lock the map, so it is not suitable for concurrent access.
+// Considerations: This method does not lock the map, so it is not suitable for concurrent access.
 func (g *SplitSwissLockFreeMapUint64) Put(hash, n uint64) error {
 	return g.m[hash%g.nrOfBuckets].Put(hash, n)
 }
@@ -1035,7 +1035,7 @@ func (g *SplitSwissLockFreeMapUint64) Put(hash, n uint64) error {
 //   - uint64: The value associated with the hash, or 0 if the hash does not exist.
 //   - bool: True if the hash was found in the map, false otherwise.
 //
-// Attn: This method does not lock the map, so it is not suitable for concurrent access.
+// Considerations: This method does not lock the map, so it is not suitable for concurrent access.
 func (g *SplitSwissLockFreeMapUint64) Get(hash uint64) (uint64, bool) {
 	return g.m[hash%g.nrOfBuckets].Get(hash)
 }
@@ -1047,7 +1047,7 @@ func (g *SplitSwissLockFreeMapUint64) Get(hash uint64) (uint64, bool) {
 // Returns:
 //   - []chainhash.Hash: A slice containing all the hashes in the map.
 //
-// Attn: This method does not lock the map, so it is not suitable for concurrent access.
+// Considerations: This method does not lock the map, so it is not suitable for concurrent access.
 func (g *SplitSwissMapUint64) Keys() []chainhash.Hash {
 	keys := make([]chainhash.Hash, 0, g.Length())
 

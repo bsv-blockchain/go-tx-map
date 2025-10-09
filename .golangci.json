@@ -44,11 +44,11 @@
         "disable": [
             "gocritic",
             "godot",
-            "godox"
+            "wsl_v5"
         ],
         "enable": [
-            "arangolint",
             "asasalint",
+            "arangolint",
             "asciicheck",
             "bidichk",
             "bodyclose",
@@ -73,6 +73,7 @@
             "gocognit",
             "goconst",
             "gocyclo",
+            "godox",
             "goheader",
             "gomoddirectives",
             "gosec",
@@ -108,7 +109,6 @@
             "unparam",
             "unused",
             "wastedassign",
-            "wsl_v5",
             "zerologlint"
         ],
         "settings": {
@@ -215,6 +215,9 @@
     },
     "run": {
         "allow-parallel-runners": true,
+        "build-tags": [
+            "mage"
+        ],
         "concurrency": 8,
         "issues-exit-code": 1,
         "tests": true
