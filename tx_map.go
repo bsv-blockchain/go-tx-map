@@ -114,6 +114,11 @@ var (
 	ErrBucketDoesNotExist = errors.New("bucket does not exist")
 )
 
+const (
+	// errWrapFormat is the format string for wrapping errors with additional context
+	errWrapFormat = "%w: %v"
+)
+
 // NewSwissMap creates a new SwissMap with the specified initial length.
 // The length is used to preallocate the map size for better performance.
 // It is not a hard limit, but a hint to the underlying swiss map.
@@ -336,7 +341,7 @@ func (s *SwissMapUint64) Put(hash chainhash.Hash, n uint64) error {
 
 	exists := s.m.Has(hash)
 	if exists {
-		return fmt.Errorf("%w: %v", ErrHashAlreadyExists, hash)
+		return fmt.Errorf(errWrapFormat, ErrHashAlreadyExists, hash)
 	}
 
 	s.m.Put(hash, n)
@@ -363,7 +368,7 @@ func (s *SwissMapUint64) PutMulti(hashes []chainhash.Hash, n uint64) error {
 	for _, hash := range hashes {
 		exists := s.m.Has(hash)
 		if exists {
-			return fmt.Errorf("%w: %v", ErrHashAlreadyExists, hash)
+			return fmt.Errorf(errWrapFormat, ErrHashAlreadyExists, hash)
 		}
 
 		s.m.Put(hash, n)
@@ -388,7 +393,7 @@ func (s *SwissMapUint64) Set(hash chainhash.Hash, value uint64) error {
 	defer s.mu.Unlock()
 
 	if !s.m.Has(hash) {
-		return fmt.Errorf("%w: %v", ErrHashDoesNotExist, hash)
+		return fmt.Errorf(errWrapFormat, ErrHashDoesNotExist, hash)
 	}
 
 	s.m.Put(hash, value)
