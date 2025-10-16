@@ -246,7 +246,7 @@ magex help
 
 ## 🧪 Examples & Tests
 
-All unit tests and [examples](examples) run via [GitHub Actions](https://github.com/bsv-blockchain/go-bt/actions) and use [Go version 1.24.x](https://go.dev/doc/go1.24). View the [configuration file](.github/workflows/fortress.yml).
+All unit tests and [examples](examples) run via [GitHub Actions](https://github.com/bsv-blockchain/go-tx-map/actions) and use [Go version 1.24.x](https://go.dev/doc/go1.24). View the [configuration file](.github/workflows/fortress.yml).
 
 Run all tests (fast):
 
