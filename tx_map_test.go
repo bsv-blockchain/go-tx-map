@@ -284,6 +284,30 @@ func testTxMap(t *testing.T, m TxMap) {
 	err = m.Set([32]byte{0x03, 0x01}, uint64(3))
 	require.NoError(t, err)
 
+	wasSet, err := m.SetIfExists([32]byte{0x04, 0x01}, uint64(4))
+	require.NoError(t, err)
+	assert.True(t, wasSet)
+
+	val, ok = m.Get([32]byte{0x04, 0x01})
+	assert.True(t, ok)
+	assert.Equal(t, uint64(4), val)
+
+	wasSet, err = m.SetIfExists([32]byte{0x44, 0x01}, uint64(4))
+	require.NoError(t, err)
+	assert.False(t, wasSet)
+
+	wasSet, err = m.SetIfNotExists([32]byte{0x44, 0x01}, uint64(4))
+	require.NoError(t, err)
+	assert.True(t, wasSet)
+
+	val, ok = m.Get([32]byte{0x44, 0x01})
+	assert.True(t, ok)
+	assert.Equal(t, uint64(4), val)
+
+	wasSet, err = m.SetIfNotExists([32]byte{0x03, 0x01}, uint64(5))
+	require.NoError(t, err)
+	assert.False(t, wasSet)
+
 	ok = m.Exists([32]byte{0x03, 0x01})
 	assert.True(t, ok)
 
@@ -298,7 +322,7 @@ func testTxMap(t *testing.T, m TxMap) {
 
 		return false
 	})
-	assert.Equal(t, 3, nrOfKeys)
+	assert.Equal(t, 4, nrOfKeys)
 }
 
 // testTxMapUint64 tests the basic operations of a Uint64 map implementation.

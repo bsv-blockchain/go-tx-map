@@ -73,6 +73,8 @@ type TxMap interface {
 	Put(hash chainhash.Hash, value uint64) error
 	PutMulti(hashes []chainhash.Hash, value uint64) error
 	Set(hash chainhash.Hash, value uint64) error
+	SetIfExists(hash chainhash.Hash, value uint64) (bool, error)
+	SetIfNotExists(hash chainhash.Hash, value uint64) (bool, error)
 	Iter(f func(hash chainhash.Hash, value uint64) bool)
 }
 
@@ -277,6 +279,9 @@ func (s *SwissMap) Iter(f func(hash chainhash.Hash, value uint64) bool) {
 	})
 }
 
+// check that SwissMapUint64 implements TxMap
+var _ TxMap = (*SwissMapUint64)(nil)
+
 // SwissMapUint64 is a concurrent-safe map that uses the swiss package to store
 // transaction hashes as keys and uint64 values.
 type SwissMapUint64 struct {
@@ -399,6 +404,56 @@ func (s *SwissMapUint64) Set(hash chainhash.Hash, value uint64) error {
 	s.m.Put(hash, value)
 
 	return nil
+}
+
+// SetIfExists updates the value associated with the given hash in the map if it exists.
+// It returns a boolean indicating whether the hash was found and updated.
+// If the hash does not exist, it returns false and no error.
+//
+// Params:
+//   - hash: The hash to update in the map.
+//   - value: The value to associate with the hash.
+//
+// Returns:
+//   - bool: True if the hash was found and updated, false otherwise.
+//   - error: An error if there was an issue updating the hash, nil otherwise.
+func (s *SwissMapUint64) SetIfExists(hash chainhash.Hash, value uint64) (bool, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if !s.m.Has(hash) {
+		return false, nil
+	}
+
+	s.m.Put(hash, value)
+
+	return true, nil
+}
+
+// SetIfNotExists adds the hash with the given value to the map only if the hash does not already exist.
+// It returns a boolean indicating whether the hash was added.
+// If the hash already exists, it returns false and no error.
+//
+// Params:
+//   - hash: The hash to add to the map.
+//   - value: The value to associate with the hash.
+//
+// Returns:
+//   - bool: True if the hash was added, false if it already existed.
+//   - error: An error if there was an issue adding the hash, nil otherwise.
+func (s *SwissMapUint64) SetIfNotExists(hash chainhash.Hash, value uint64) (bool, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.m.Has(hash) {
+		return false, nil
+	}
+
+	s.m.Put(hash, value)
+
+	s.length++
+
+	return true, nil
 }
 
 // Get retrieves the uint64 value associated with the given hash from the map.
@@ -593,6 +648,9 @@ func (s *SwissLockFreeMapUint64) Length() int {
 	return int(s.length.Load())
 }
 
+// check that SplitSwissMap implements TxMap
+var _ TxMap = (*SplitSwissMap)(nil)
+
 // SplitSwissMap is a map that splits the data into multiple buckets to reduce contention.
 // It uses SwissMapUint64 for each bucket to store the hashes and their associated uint64 values.
 // Since SwissMapUint64 is concurrent-safe, SplitSwissMap can handle concurrent access without additional locks.
@@ -612,10 +670,15 @@ type SplitSwissMap struct {
 //   - *SplitSwissMap: A pointer to the newly created SplitSwissMap instance.
 //
 // Considerations: The number of buckets is fixed at 1024, and the length is divided by this number to determine the size of each bucket.
-func NewSplitSwissMap(length int) *SplitSwissMap {
+func NewSplitSwissMap(length int, buckets ...uint16) *SplitSwissMap {
+	useBuckets := uint16(1024)
+	if len(buckets) > 0 {
+		useBuckets = buckets[0]
+	}
+
 	m := &SplitSwissMap{
-		m:           make(map[uint16]*SwissMapUint64, 1024),
-		nrOfBuckets: 1024,
+		m:           make(map[uint16]*SwissMapUint64, useBuckets),
+		nrOfBuckets: useBuckets,
 	}
 
 	for i := uint16(0); i <= m.nrOfBuckets; i++ {
@@ -720,6 +783,36 @@ func (g *SplitSwissMap) Set(hash chainhash.Hash, value uint64) error {
 	return g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].Set(hash, value)
 }
 
+// SetIfExists updates the value associated with the given hash in the map if it exists.
+// It returns a boolean indicating whether the hash was found and updated.
+// If the hash does not exist, it returns false and no error.
+//
+// Params:
+//   - hash: The hash to update in the map.
+//   - value: The value to associate with the hash.
+//
+// Returns:
+//   - bool: True if the hash was found and updated, false otherwise.
+//   - error: An error if there was an issue updating the hash, nil otherwise.
+func (g *SplitSwissMap) SetIfExists(hash chainhash.Hash, value uint64) (bool, error) {
+	return g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].SetIfExists(hash, value)
+}
+
+// SetIfNotExists adds the hash with the given value to the map only if the hash does not already exist.
+// It returns a boolean indicating whether the hash was added.
+// If the hash already exists, it returns false and no error.
+//
+// Params:
+//   - hash: The hash to add to the map.
+//   - value: The value to associate with the hash.
+//
+// Returns:
+//   - bool: True if the hash was added, false if it already existed.
+//   - error: An error if there was an issue adding the hash, nil otherwise.
+func (g *SplitSwissMap) SetIfNotExists(hash chainhash.Hash, value uint64) (bool, error) {
+	return g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].SetIfNotExists(hash, value)
+}
+
 // Keys returns a slice of all hashes currently stored in the map.
 // It iterates over all buckets and collects the keys from each bucket.
 // The order of keys is not guaranteed.
@@ -801,6 +894,9 @@ func (g *SplitSwissMap) Iter(f func(hash chainhash.Hash, value uint64) bool) {
 	}
 }
 
+// check that SplitSwissMapUint64 implements TxMap
+var _ TxMap = (*SplitSwissMapUint64)(nil)
+
 // SplitSwissMapUint64 is a map that splits the data into multiple buckets to reduce contention.
 // It uses SwissMapUint64 for each bucket to store the hashes and their associated uint64 values.
 // The number of buckets is fixed at 1024, and the length is divided by this number to determine the size of each bucket.
@@ -818,10 +914,15 @@ type SplitSwissMapUint64 struct {
 //
 // Returns:
 //   - *SplitSwissMapUint64: A pointer to the newly created SplitSwissMapUint64 instance.
-func NewSplitSwissMapUint64(length uint32) *SplitSwissMapUint64 {
+func NewSplitSwissMapUint64(length uint32, buckets ...uint16) *SplitSwissMapUint64 {
+	useBuckets := uint16(1024)
+	if len(buckets) > 0 {
+		useBuckets = buckets[0]
+	}
+
 	m := &SplitSwissMapUint64{
-		m:           make(map[uint16]*SwissMapUint64, 256),
-		nrOfBuckets: 1024,
+		m:           make(map[uint16]*SwissMapUint64, useBuckets),
+		nrOfBuckets: useBuckets,
 	}
 
 	for i := uint16(0); i <= m.nrOfBuckets; i++ {
@@ -897,6 +998,36 @@ func (g *SplitSwissMapUint64) PutMulti(hashes []chainhash.Hash, n uint64) error 
 //   - error: An error if the hash does not exist in the map, nil otherwise.
 func (g *SplitSwissMapUint64) Set(hash chainhash.Hash, value uint64) error {
 	return g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].Set(hash, value)
+}
+
+// SetIfExists updates the value associated with the given hash in the map if it exists.
+// It returns a boolean indicating whether the hash was found and updated.
+// If the hash does not exist, it returns false and no error.
+//
+// Params:
+//   - hash: The hash to update in the map.
+//   - value: The value to associate with the hash.
+//
+// Returns:
+//   - bool: True if the hash was found and updated, false otherwise.
+//   - error: An error if there was an issue updating the hash, nil otherwise.
+func (g *SplitSwissMapUint64) SetIfExists(hash chainhash.Hash, value uint64) (bool, error) {
+	return g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].SetIfExists(hash, value)
+}
+
+// SetIfNotExists adds the hash with the given value to the map only if the hash does not already exist.
+// It returns a boolean indicating whether the hash was added.
+// If the hash already exists, it returns false and no error.
+//
+// Params:
+//   - hash: The hash to add to the map.
+//   - value: The value to associate with the hash.
+//
+// Returns:
+//   - bool: True if the hash was added, false if it already existed.
+//   - error: An error if there was an issue adding the hash, nil otherwise.
+func (g *SplitSwissMapUint64) SetIfNotExists(hash chainhash.Hash, value uint64) (bool, error) {
+	return g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].SetIfNotExists(hash, value)
 }
 
 // Get retrieves the uint64 value associated with the given hash from the map.
@@ -976,10 +1107,15 @@ type SplitSwissLockFreeMapUint64 struct {
 //
 // Returns:
 //   - *SplitSwissLockFreeMapUint64: A pointer to the newly created SplitSwissLockFreeMapUint64 instance.
-func NewSplitSwissLockFreeMapUint64(length int) *SplitSwissLockFreeMapUint64 {
+func NewSplitSwissLockFreeMapUint64(length int, buckets ...uint64) *SplitSwissLockFreeMapUint64 {
+	useBuckets := uint64(1024)
+	if len(buckets) > 0 {
+		useBuckets = buckets[0]
+	}
+
 	m := &SplitSwissLockFreeMapUint64{
-		m:           make(map[uint64]*SwissLockFreeMapUint64, 256),
-		nrOfBuckets: 1024,
+		m:           make(map[uint64]*SwissLockFreeMapUint64, useBuckets),
+		nrOfBuckets: uint64(useBuckets),
 	}
 
 	for i := uint64(0); i <= m.nrOfBuckets; i++ {
