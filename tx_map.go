@@ -1115,7 +1115,7 @@ func NewSplitSwissLockFreeMapUint64(length int, buckets ...uint64) *SplitSwissLo
 
 	m := &SplitSwissLockFreeMapUint64{
 		m:           make(map[uint64]*SwissLockFreeMapUint64, useBuckets),
-		nrOfBuckets: uint64(useBuckets),
+		nrOfBuckets: useBuckets,
 	}
 
 	for i := uint64(0); i <= m.nrOfBuckets; i++ {
