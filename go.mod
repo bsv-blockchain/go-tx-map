@@ -19,5 +19,5 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-// Security: Force golang.org/x/crypto to v0.45.0 to fix CVE-2025-47914 and CVE-2025-58181
-replace golang.org/x/crypto => golang.org/x/crypto v0.45.0
+// Security: Force golang.org/x/crypto to v0.46.0 to fix CVE-2025-47914 and CVE-2025-58181
+replace golang.org/x/crypto => golang.org/x/crypto v0.46.0
