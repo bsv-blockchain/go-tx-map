@@ -5,7 +5,7 @@ go 1.24.3
 toolchain go1.24.4
 
 require (
-	github.com/bsv-blockchain/go-bt/v2 v2.5.2
+	github.com/bsv-blockchain/go-bt/v2 v2.5.3
 	github.com/dolthub/swiss v0.2.1
 	github.com/stretchr/testify v1.11.1
 )
