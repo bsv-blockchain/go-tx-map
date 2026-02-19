@@ -1,0 +1,176 @@
+=== RUN   TestLargeMapMemoryFootprint
+    tx_map_benchmarks_large_test.go:42: Testing memory footprint with 100000000 items
+    tx_map_benchmarks_large_test.go:43: Expected minimum data size: 4000000000 bytes (3814.70 MB) for chainhash maps
+    tx_map_benchmarks_large_test.go:45: Expected minimum data size: 1600000000 bytes (1525.88 MB) for uint64 maps
+=== RUN   TestLargeMapMemoryFootprint/SwissMapUint64/native
+    tx_map_benchmarks_large_test.go:239: Heap in use: 47328 bytes (0.05 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 6447741440 bytes (6149.05 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 64.48
+=== RUN   TestLargeMapMemoryFootprint/SwissMapUint64/cockroachdb
+    tx_map_benchmarks_large_test.go:239: Heap in use: 0 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 5638193488 bytes (5377.00 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 56.38
+=== RUN   TestLargeMapMemoryFootprint/SwissMapUint64/dolthub
+    tx_map_benchmarks_large_test.go:239: Heap in use: 288 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 4685718112 bytes (4468.65 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 46.86
+=== RUN   TestLargeMapMemoryFootprint/SwissMapUint64/tidwall
+    tx_map_benchmarks_large_test.go:239: Heap in use: 208 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 12884904080 bytes (12288.00 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 128.85
+=== RUN   TestLargeMapMemoryFootprint/SplitSwissMapUint64/native
+    tx_map_benchmarks_large_test.go:239: Heap in use: 5280 bytes (0.01 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 6454262496 bytes (6155.26 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 64.54
+=== RUN   TestLargeMapMemoryFootprint/SplitSwissMapUint64/cockroachdb
+    tx_map_benchmarks_large_test.go:239: Heap in use: 304 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 5644015504 bytes (5382.55 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 56.44
+=== RUN   TestLargeMapMemoryFootprint/SplitSwissMapUint64/dolthub
+    tx_map_benchmarks_large_test.go:239: Heap in use: 0 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 4693979600 bytes (4476.53 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 46.94
+=== RUN   TestLargeMapMemoryFootprint/SplitSwissMapUint64/tidwall
+    tx_map_benchmarks_large_test.go:239: Heap in use: 192 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 12885906112 bytes (12288.96 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 128.86
+=== RUN   TestLargeMapMemoryFootprint/SwissLockFreeMapUint64/native
+    tx_map_benchmarks_large_test.go:239: Heap in use: 0 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 2421162192 bytes (2309.00 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 24.21
+=== RUN   TestLargeMapMemoryFootprint/SwissLockFreeMapUint64/cockroachdb
+    tx_map_benchmarks_large_test.go:239: Heap in use: 0 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 2416967936 bytes (2305.00 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 24.17
+=== RUN   TestLargeMapMemoryFootprint/SwissLockFreeMapUint64/dolthub
+    tx_map_benchmarks_large_test.go:239: Heap in use: 96 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 1942864208 bytes (1852.86 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 19.43
+=== RUN   TestLargeMapMemoryFootprint/SwissLockFreeMapUint64/tidwall
+    tx_map_benchmarks_large_test.go:239: Heap in use: 0 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 6442453040 bytes (6144.00 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 64.42
+=== RUN   TestLargeMapMemoryFootprint/SplitSwissLockFreeMapUint64/native
+    tx_map_benchmarks_large_test.go:239: Heap in use: 96 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 2423760448 bytes (2311.48 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 24.24
+=== RUN   TestLargeMapMemoryFootprint/SplitSwissLockFreeMapUint64/cockroachdb
+    tx_map_benchmarks_large_test.go:239: Heap in use: 96 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 2419611248 bytes (2307.52 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 24.20
+=== RUN   TestLargeMapMemoryFootprint/SplitSwissLockFreeMapUint64/dolthub
+    tx_map_benchmarks_large_test.go:239: Heap in use: 0 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 1948193152 bytes (1857.94 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 19.48
+=== RUN   TestLargeMapMemoryFootprint/SplitSwissLockFreeMapUint64/tidwall
+    tx_map_benchmarks_large_test.go:239: Heap in use: 0 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 6443618736 bytes (6145.11 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 64.44
+--- PASS: TestLargeMapMemoryFootprint (441.84s)
+    --- PASS: TestLargeMapMemoryFootprint/SwissMapUint64/native (36.45s)
+    --- PASS: TestLargeMapMemoryFootprint/SwissMapUint64/cockroachdb (26.23s)
+    --- PASS: TestLargeMapMemoryFootprint/SwissMapUint64/dolthub (30.45s)
+    --- PASS: TestLargeMapMemoryFootprint/SwissMapUint64/tidwall (41.44s)
+    --- PASS: TestLargeMapMemoryFootprint/SplitSwissMapUint64/native (31.67s)
+    --- PASS: TestLargeMapMemoryFootprint/SplitSwissMapUint64/cockroachdb (26.88s)
+    --- PASS: TestLargeMapMemoryFootprint/SplitSwissMapUint64/dolthub (27.76s)
+    --- PASS: TestLargeMapMemoryFootprint/SplitSwissMapUint64/tidwall (37.26s)
+    --- PASS: TestLargeMapMemoryFootprint/SwissLockFreeMapUint64/native (23.19s)
+    --- PASS: TestLargeMapMemoryFootprint/SwissLockFreeMapUint64/cockroachdb (17.15s)
+    --- PASS: TestLargeMapMemoryFootprint/SwissLockFreeMapUint64/dolthub (17.14s)
+    --- PASS: TestLargeMapMemoryFootprint/SwissLockFreeMapUint64/tidwall (25.55s)
+    --- PASS: TestLargeMapMemoryFootprint/SplitSwissLockFreeMapUint64/native (26.96s)
+    --- PASS: TestLargeMapMemoryFootprint/SplitSwissLockFreeMapUint64/cockroachdb (20.90s)
+    --- PASS: TestLargeMapMemoryFootprint/SplitSwissLockFreeMapUint64/dolthub (21.31s)
+    --- PASS: TestLargeMapMemoryFootprint/SplitSwissLockFreeMapUint64/tidwall (28.76s)
+=== RUN   TestLargeMapMemoryFootprint
+    tx_map_benchmarks_large_test.go:42: Testing memory footprint with 100000000 items
+    tx_map_benchmarks_large_test.go:43: Expected minimum data size: 4000000000 bytes (3814.70 MB) for chainhash maps
+    tx_map_benchmarks_large_test.go:45: Expected minimum data size: 1600000000 bytes (1525.88 MB) for uint64 maps
+=== RUN   TestLargeMapMemoryFootprint/SwissMapUint64/native
+    tx_map_benchmarks_large_test.go:239: Heap in use: 16 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 6447694128 bytes (6149.00 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 64.48
+=== RUN   TestLargeMapMemoryFootprint/SwissMapUint64/cockroachdb
+    tx_map_benchmarks_large_test.go:239: Heap in use: 16 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 5638193504 bytes (5377.00 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 56.38
+=== RUN   TestLargeMapMemoryFootprint/SwissMapUint64/dolthub
+    tx_map_benchmarks_large_test.go:239: Heap in use: 96 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 4685717920 bytes (4468.65 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 46.86
+=== RUN   TestLargeMapMemoryFootprint/SwissMapUint64/tidwall
+    tx_map_benchmarks_large_test.go:239: Heap in use: 96 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 12884903968 bytes (12288.00 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 128.85
+=== RUN   TestLargeMapMemoryFootprint/SplitSwissMapUint64/native
+    tx_map_benchmarks_large_test.go:239: Heap in use: 96 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 6454458640 bytes (6155.45 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 64.54
+=== RUN   TestLargeMapMemoryFootprint/SplitSwissMapUint64/cockroachdb
+    tx_map_benchmarks_large_test.go:239: Heap in use: 0 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 5644015200 bytes (5382.55 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 56.44
+=== RUN   TestLargeMapMemoryFootprint/SplitSwissMapUint64/dolthub
+    tx_map_benchmarks_large_test.go:239: Heap in use: 96 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 4693979696 bytes (4476.53 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 46.94
+=== RUN   TestLargeMapMemoryFootprint/SplitSwissMapUint64/tidwall
+    tx_map_benchmarks_large_test.go:239: Heap in use: 304 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 12885906224 bytes (12288.96 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 128.86
+=== RUN   TestLargeMapMemoryFootprint/SwissLockFreeMapUint64/native
+    tx_map_benchmarks_large_test.go:239: Heap in use: 0 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 2421162192 bytes (2309.00 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 24.21
+=== RUN   TestLargeMapMemoryFootprint/SwissLockFreeMapUint64/cockroachdb
+    tx_map_benchmarks_large_test.go:239: Heap in use: 96 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 2416968032 bytes (2305.00 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 24.17
+=== RUN   TestLargeMapMemoryFootprint/SwissLockFreeMapUint64/dolthub
+    tx_map_benchmarks_large_test.go:239: Heap in use: 0 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 1942864112 bytes (1852.86 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 19.43
+=== RUN   TestLargeMapMemoryFootprint/SwissLockFreeMapUint64/tidwall
+    tx_map_benchmarks_large_test.go:239: Heap in use: 0 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 6442453040 bytes (6144.00 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 64.42
+=== RUN   TestLargeMapMemoryFootprint/SplitSwissLockFreeMapUint64/native
+    tx_map_benchmarks_large_test.go:239: Heap in use: 192 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 2423760544 bytes (2311.48 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 24.24
+=== RUN   TestLargeMapMemoryFootprint/SplitSwissLockFreeMapUint64/cockroachdb
+    tx_map_benchmarks_large_test.go:239: Heap in use: 96 bytes (0.00 MB)
+    tx_map_benchmarks_large_test.go:240: Total allocated: 2419611248 bytes (2307.52 MB)
+    tx_map_benchmarks_large_test.go:241: Bytes per entry (heap): 0.00
+    tx_map_benchmarks_large_test.go:242: Bytes per entry (total): 24.20
+=== RUN   TestLargeMapMemoryFootprint/SplitSwissLockFreeMapUint64/dolthub
