@@ -1,0 +1,22 @@
+goos: darwin
+goarch: amd64
+pkg: github.com/bsv-blockchain/go-tx-map
+cpu: Intel(R) Core(TM) i9-9880H CPU @ 2.30GHz
+BenchmarkDelete/Map/dolthub-16         	10000000	        86.44 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDelete/Map/cockroachdb-16     	10000000	        77.48 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDelete/Map/native-16          	10000000	        47.72 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDelete/Map/tidwall-16         	10000000	        55.71 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDelete/SplitMap/dolthub-16    	10000000	       727.4 ns/op	     302 B/op	       5 allocs/op
+BenchmarkDelete/SplitMap/cockroachdb-16         	10000000	       734.4 ns/op	     302 B/op	       5 allocs/op
+BenchmarkDelete/SplitMap/native-16              	10000000	       690.9 ns/op	     302 B/op	       5 allocs/op
+BenchmarkDelete/SplitMap/tidwall-16             	10000000	       729.8 ns/op	     303 B/op	       5 allocs/op
+BenchmarkDelete/MapUint64/dolthub-16            	10000000	       608.6 ns/op	     285 B/op	       4 allocs/op
+BenchmarkDelete/MapUint64/cockroachdb-16        	10000000	       596.4 ns/op	     285 B/op	       4 allocs/op
+BenchmarkDelete/MapUint64/native-16             	10000000	       535.9 ns/op	     285 B/op	       4 allocs/op
+BenchmarkDelete/MapUint64/tidwall-16            	10000000	       564.5 ns/op	     285 B/op	       4 allocs/op
+BenchmarkDelete/SplitMapUint64/dolthub-16       	10000000	       726.6 ns/op	     302 B/op	       5 allocs/op
+BenchmarkDelete/SplitMapUint64/cockroachdb-16   	10000000	       746.5 ns/op	     302 B/op	       5 allocs/op
+BenchmarkDelete/SplitMapUint64/native-16        	10000000	       693.5 ns/op	     302 B/op	       5 allocs/op
+BenchmarkDelete/SplitMapUint64/tidwall-16       	10000000	       730.8 ns/op	     303 B/op	       5 allocs/op
+PASS
+ok  	github.com/bsv-blockchain/go-tx-map	84.898s
