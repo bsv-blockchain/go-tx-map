@@ -581,6 +581,13 @@ func (s *SwissLockFreeMapUint64) Map() *swiss.Map[uint64, uint64] {
 	return s.m
 }
 
+// Iter iterates over all key-value pairs in the map. Stops if f returns true.
+// Enables unified iteration API with NativeLockFreeMapUint64 for consumers that
+// support both dolthub and native backends.
+func (s *SwissLockFreeMapUint64) Iter(f func(k, v uint64) (stop bool)) {
+	s.m.Iter(f)
+}
+
 // Exists checks if the given hash exists in the map.
 //
 // Params:
@@ -1098,16 +1105,18 @@ type SplitSwissLockFreeMapUint64 struct {
 	nrOfBuckets uint64
 }
 
+// NewSplitLockFreeMapDolthubUint64 creates a split lock-free map using dolthub/swiss (~30% less memory at 100M entries).
+func NewSplitLockFreeMapDolthubUint64(length int, buckets ...uint64) *SplitSwissLockFreeMapUint64 {
+	return newSplitSwissLockFreeMapUint64(length, buckets...)
+}
+
 // NewSplitSwissLockFreeMapUint64 creates a new SplitSwissLockFreeMapUint64 with the specified initial length.
-// The length is used to preallocate the size of each bucket.
-// It divides the length by the number of buckets to determine the size of each bucket.
-//
-// Params:
-//   - length: The initial length of the map, used for preallocation.
-//
-// Returns:
-//   - *SplitSwissLockFreeMapUint64: A pointer to the newly created SplitSwissLockFreeMapUint64 instance.
+// Deprecated: Use NewSplitLockFreeMapDolthubUint64 for dolthub or NewSplitLockFreeMapNativeUint64 for native.
 func NewSplitSwissLockFreeMapUint64(length int, buckets ...uint64) *SplitSwissLockFreeMapUint64 {
+	return newSplitSwissLockFreeMapUint64(length, buckets...)
+}
+
+func newSplitSwissLockFreeMapUint64(length int, buckets ...uint64) *SplitSwissLockFreeMapUint64 {
 	useBuckets := uint64(1024)
 	if len(buckets) > 0 {
 		useBuckets = buckets[0]
@@ -1212,6 +1221,20 @@ func (g *SplitSwissLockFreeMapUint64) Length() int {
 	}
 
 	return length
+}
+
+// IterAll iterates over all key-value pairs across all buckets. Stops if f returns true.
+func (g *SplitSwissLockFreeMapUint64) IterAll(f func(k, v uint64) (stop bool)) {
+	for i := uint64(0); i <= g.nrOfBuckets; i++ {
+		g.m[i].Iter(func(k, v uint64) (stop bool) {
+			return f(k, v)
+		})
+	}
+}
+
+// DeleteBucket removes the bucket at index h from the map of buckets.
+func (g *SplitSwissLockFreeMapUint64) DeleteBucket(h uint64) {
+	delete(g.m, h)
 }
 
 // Bytes2Uint16Buckets converts the first two bytes of a chainhash.Hash to a uint16 value

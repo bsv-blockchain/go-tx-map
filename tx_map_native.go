@@ -15,6 +15,10 @@ import (
 	"github.com/bsv-blockchain/go-bt/v2/chainhash"
 )
 
+// Map is the default hash-only map type using native implementation.
+// Use NewDefaultMap to create instances.
+type Map = NativeMap
+
 // NativeMap is a simple concurrent-safe map that uses Go's native map
 type NativeMap struct {
 	mu     sync.RWMutex
@@ -191,6 +195,10 @@ func (s *NativeMap) Iter(f func(hash chainhash.Hash, value uint64) bool) {
 var _ TxMap = (*NativeMapUint64)(nil)
 
 // NativeMapUint64 is a concurrent-safe map that uses Go's native map to store
+// MapUint64 is the default hash-to-uint64 map type using native implementation.
+// Use NewDefaultMapUint64 to create instances.
+type MapUint64 = NativeMapUint64
+
 // transaction hashes as keys and uint64 values.
 type NativeMapUint64 struct {
 	mu     sync.RWMutex
@@ -467,6 +475,10 @@ func (s *NativeMapUint64) Delete(hash chainhash.Hash) error {
 	return nil
 }
 
+// LockFreeMapUint64 is the default lock-free map type using native implementation.
+// Use NewDefaultLockFreeMapUint64 to create instances.
+type LockFreeMapUint64 = NativeLockFreeMapUint64
+
 // NativeLockFreeMapUint64 is a lock-free map for uint64 keys and values
 type NativeLockFreeMapUint64 struct {
 	m      map[uint64]uint64
@@ -504,6 +516,17 @@ func NewDefaultLockFreeMapUint64(length int) *NativeLockFreeMapUint64 {
 // Considerations: This method does not lock the map, so it is not suitable for concurrent access.
 func (s *NativeLockFreeMapUint64) Map() map[uint64]uint64 {
 	return s.m
+}
+
+// Iter iterates over all key-value pairs in the map. Stops if f returns true.
+// Compatible with the pattern used by SwissLockFreeMapUint64.Map().Iter for consumers
+// that need a unified iteration API across dolthub and native backends.
+func (s *NativeLockFreeMapUint64) Iter(f func(k, v uint64) (stop bool)) {
+	for k, v := range s.m {
+		if f(k, v) {
+			return
+		}
+	}
 }
 
 // Exists checks if the given hash exists in the map.
@@ -578,6 +601,10 @@ var _ TxMap = (*NativeSplitMap)(nil)
 
 // NativeSplitMap is a map that splits the data into multiple buckets to reduce contention.
 // It uses NativeMapUint64 for each bucket to store the hashes and their associated uint64 values.
+// SplitMap is the default split map type using native implementation.
+// Use NewDefaultSplitMap to create instances.
+type SplitMap = NativeSplitMap
+
 // Since NativeMapUint64 is concurrent-safe, NativeSplitMap can handle concurrent access without additional locks.
 type NativeSplitMap struct {
 	m           map[uint16]*NativeMapUint64
@@ -830,6 +857,10 @@ var _ TxMap = (*NativeSplitMapUint64)(nil)
 
 // NativeSplitMapUint64 is a map that splits the data into multiple buckets to reduce contention.
 // It uses NativeMapUint64 for each bucket to store the hashes and their associated uint64 values.
+// SplitMapUint64 is the default split map uint64 type using native implementation.
+// Use NewDefaultSplitMapUint64 to create instances.
+type SplitMapUint64 = NativeSplitMapUint64
+
 // The number of buckets is fixed at 1024, and the length is divided by this number to determine the size of each bucket.
 type NativeSplitMapUint64 struct {
 	m           map[uint16]*NativeMapUint64
@@ -1044,6 +1075,10 @@ func (g *NativeSplitMapUint64) Keys() []chainhash.Hash {
 	return keys
 }
 
+// SplitLockFreeMapUint64 is the default split lock-free map type using native implementation.
+// Use NewDefaultSplitLockFreeMapUint64 to create instances.
+type SplitLockFreeMapUint64 = NativeSplitLockFreeMapUint64
+
 // NativeSplitLockFreeMapUint64 is a map that splits the data into multiple buckets to reduce contention.
 // It uses NativeLockFreeMapUint64 for each bucket to store the hashes and their associated uint64 values.
 type NativeSplitLockFreeMapUint64 struct {
@@ -1079,9 +1114,30 @@ func NewNativeSplitLockFreeMapUint64(length int, buckets ...uint64) *NativeSplit
 }
 
 // NewDefaultSplitLockFreeMapUint64 returns a native split lock-free map. Use for general-purpose
-// uint64-to-uint64 split maps when speed matters. Use NewSplitSwissLockFreeMapUint64 when memory is constrained.
+// uint64-to-uint64 split maps when speed matters. Use NewSplitLockFreeMapDolthubUint64 when memory is constrained.
 func NewDefaultSplitLockFreeMapUint64(length int, buckets ...uint64) *NativeSplitLockFreeMapUint64 {
 	return NewNativeSplitLockFreeMapUint64(length, buckets...)
+}
+
+// NewSplitLockFreeMapNativeUint64 creates a split lock-free map using Go's native map (faster for most operations).
+func NewSplitLockFreeMapNativeUint64(length int, buckets ...uint64) *NativeSplitLockFreeMapUint64 {
+	return NewNativeSplitLockFreeMapUint64(length, buckets...)
+}
+
+// SplitLockFreeMapUint64Like is the interface implemented by both SplitSwissLockFreeMapUint64 and NativeSplitLockFreeMapUint64.
+// Use when you need to choose the backend at runtime (e.g. NewSplitLockFreeMapNativeUint64 vs NewSplitLockFreeMapDolthubUint64).
+type SplitLockFreeMapUint64Like interface {
+	Put(hash, value uint64) error
+	Get(hash uint64) (uint64, bool)
+	Length() int
+	Exists(hash uint64) bool
+	IterAll(f func(k, v uint64) (stop bool))
+	DeleteBucket(h uint64)
+}
+
+// LockFreeMapUint64Iterable is implemented by bucket types that support Iter.
+type LockFreeMapUint64Iterable interface {
+	Iter(f func(k, v uint64) (stop bool))
 }
 
 // Exists checks if the given hash exists in the map.
@@ -1153,4 +1209,18 @@ func (g *NativeSplitLockFreeMapUint64) Length() int {
 	}
 
 	return length
+}
+
+// IterAll iterates over all key-value pairs across all buckets. Stops if f returns true.
+func (g *NativeSplitLockFreeMapUint64) IterAll(f func(k, v uint64) (stop bool)) {
+	for i := uint64(0); i <= g.nrOfBuckets; i++ {
+		g.m[i].Iter(func(k, v uint64) (stop bool) {
+			return f(k, v)
+		})
+	}
+}
+
+// DeleteBucket removes the bucket at index h from the map of buckets.
+func (g *NativeSplitLockFreeMapUint64) DeleteBucket(h uint64) {
+	delete(g.m, h)
 }
