@@ -2,94 +2,23 @@
 === RUN   TestMemoryConsumption/Map/dolthub
 === NAME  TestMemoryConsumption
     tx_map_benchmarks_test.go:76: Map/dolthub: 3.52 GB (3778584008 bytes, 3603.54 MB)
-=== RUN   TestMemoryConsumption/Map/cockroachdb
-=== NAME  TestMemoryConsumption
-    tx_map_benchmarks_test.go:76: Map/cockroachdb: 4.25 GB (4564525152 bytes, 4353.07 MB)
 === RUN   TestMemoryConsumption/Map/native
 === NAME  TestMemoryConsumption
     tx_map_benchmarks_test.go:76: Map/native: 5.00 GB (5373962720 bytes, 5125.01 MB)
-=== RUN   TestMemoryConsumption/Map/tidwall
-=== NAME  TestMemoryConsumption
-    tx_map_benchmarks_test.go:76: Map/tidwall: 5.00 GB (5368709584 bytes, 5120.00 MB)
 === RUN   TestMemoryConsumption/SplitMap/dolthub
 === NAME  TestMemoryConsumption
     tx_map_benchmarks_test.go:76: SplitMap/dolthub: 4.37 GB (4693979520 bytes, 4476.53 MB)
-=== RUN   TestMemoryConsumption/SplitMap/cockroachdb
-=== NAME  TestMemoryConsumption
-    tx_map_benchmarks_test.go:76: SplitMap/cockroachdb: 5.26 GB (5644015312 bytes, 5382.55 MB)
 === RUN   TestMemoryConsumption/SplitMap/native
 === NAME  TestMemoryConsumption
     tx_map_benchmarks_test.go:76: SplitMap/native: 6.01 GB (6454257024 bytes, 6155.26 MB)
-=== RUN   TestMemoryConsumption/SplitMap/tidwall
-=== NAME  TestMemoryConsumption
-    tx_map_benchmarks_test.go:76: SplitMap/tidwall: 6.00 GB (6442619328 bytes, 6144.16 MB)
 === RUN   TestMemoryConsumption/MapUint64/dolthub
 === NAME  TestMemoryConsumption
     tx_map_benchmarks_test.go:76: MapUint64/dolthub: 4.36 GB (4685718056 bytes, 4468.65 MB)
-=== RUN   TestMemoryConsumption/MapUint64/cockroachdb
-=== NAME  TestMemoryConsumption
-    tx_map_benchmarks_test.go:76: MapUint64/cockroachdb: 5.25 GB (5638193696 bytes, 5377.00 MB)
 === RUN   TestMemoryConsumption/MapUint64/native
 === NAME  TestMemoryConsumption
     tx_map_benchmarks_test.go:76: MapUint64/native: 6.00 GB (6447693968 bytes, 6149.00 MB)
-=== RUN   TestMemoryConsumption/MapUint64/tidwall
-=== NAME  TestMemoryConsumption
-    tx_map_benchmarks_test.go:76: MapUint64/tidwall: 6.00 GB (6442451152 bytes, 6144.00 MB)
 === RUN   TestMemoryConsumption/SplitMapUint64/dolthub
 === NAME  TestMemoryConsumption
     tx_map_benchmarks_test.go:76: SplitMapUint64/dolthub: 4.37 GB (4693979424 bytes, 4476.53 MB)
-=== RUN   TestMemoryConsumption/SplitMapUint64/cockroachdb
-panic: test timed out after 10m0s
-	running tests:
-		TestMemoryConsumption (10m0s)
-		TestMemoryConsumption/SplitMapUint64/cockroachdb (23s)
-
-goroutine 36 [running]:
-testing.(*M).startAlarm.func1()
-	/usr/local/Cellar/go/1.24.5/libexec/src/testing/testing.go:2484 +0x394
-created by time.goFunc
-	/usr/local/Cellar/go/1.24.5/libexec/src/time/sleep.go:215 +0x2d
-
-goroutine 1 [chan receive, 10 minutes]:
-testing.(*T).Run(0xc000003c00, {0xa99c96a?, 0xc0000dbb30?}, 0xaa9e940)
-	/usr/local/Cellar/go/1.24.5/libexec/src/testing/testing.go:1859 +0x431
-testing.runTests.func1(0xc000003c00)
-	/usr/local/Cellar/go/1.24.5/libexec/src/testing/testing.go:2279 +0x37
-testing.tRunner(0xc000003c00, 0xc0000dbc70)
-	/usr/local/Cellar/go/1.24.5/libexec/src/testing/testing.go:1792 +0xf4
-testing.runTests(0xc00000e138, {0xacb94c0, 0x28, 0x28}, {0xacc0a80?, 0x7?, 0xacbf820?})
-	/usr/local/Cellar/go/1.24.5/libexec/src/testing/testing.go:2277 +0x4b4
-testing.(*M).Run(0xc000094960)
-	/usr/local/Cellar/go/1.24.5/libexec/src/testing/testing.go:2142 +0x64a
-main.main()
-	_testmain.go:155 +0x9b
-
-goroutine 7 [chan receive]:
-testing.(*T).Run(0xc000003dc0, {0xa99ebdb?, 0xa76e1d6?}, 0xcf13e7a870)
-	/usr/local/Cellar/go/1.24.5/libexec/src/testing/testing.go:1859 +0x431
-github.com/bsv-blockchain/go-tx-map.TestMemoryConsumption(0xc000003dc0)
-	/Users/gokhansagirlar/goku/go-tx-map/tx_map_benchmarks_test.go:203 +0x765
-testing.tRunner(0xc000003dc0, 0xaa9e940)
-	/usr/local/Cellar/go/1.24.5/libexec/src/testing/testing.go:1792 +0xf4
-created by testing.(*T).Run in goroutine 1
-	/usr/local/Cellar/go/1.24.5/libexec/src/testing/testing.go:1851 +0x413
-
-goroutine 83 [runnable]:
-github.com/cockroachdb/swiss.(*Map[...]).Put(0xaaaa660, {0xed, 0x6b, 0xa1, 0x3, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
-	/Users/gokhansagirlar/go/pkg/mod/github.com/cockroachdb/swiss@v0.0.0-20251224182025-b0f6560f979b/map.go:415 +0x425
-github.com/bsv-blockchain/go-tx-map.(*CRSwissMapUint64).Put(0xcfe05d8db0, {0xed, 0x6b, 0xa1, 0x3, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
-	/Users/gokhansagirlar/goku/go-tx-map/tx_map_cockroachdb.go:250 +0x185
-github.com/bsv-blockchain/go-tx-map.(*CRSplitSwissMapUint64).Put(0xc0000ba1c0?, {0xed, 0x6b, 0xa1, 0x3, 0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...)
-	/Users/gokhansagirlar/goku/go-tx-map/tx_map_cockroachdb.go:868 +0x88
-github.com/bsv-blockchain/go-tx-map.TestMemoryConsumption.func15.1()
-	/Users/gokhansagirlar/goku/go-tx-map/tx_map_benchmarks_test.go:207 +0x87
-github.com/bsv-blockchain/go-tx-map.TestMemoryConsumption.func1({0xa99ebdb, 0x1a}, 0x699c13f9?)
-	/Users/gokhansagirlar/goku/go-tx-map/tx_map_benchmarks_test.go:65 +0x5f
-github.com/bsv-blockchain/go-tx-map.TestMemoryConsumption.func15(0xc2b0302540?)
-	/Users/gokhansagirlar/goku/go-tx-map/tx_map_benchmarks_test.go:204 +0x58
-testing.tRunner(0xc2b0302540, 0xcf13e7a870)
-	/usr/local/Cellar/go/1.24.5/libexec/src/testing/testing.go:1792 +0xf4
-created by testing.(*T).Run in goroutine 7
-	/usr/local/Cellar/go/1.24.5/libexec/src/testing/testing.go:1851 +0x413
-exit status 2
-FAIL	github.com/bsv-blockchain/go-tx-map	603.858s
+PASS
+ok  	github.com/bsv-blockchain/go-tx-map

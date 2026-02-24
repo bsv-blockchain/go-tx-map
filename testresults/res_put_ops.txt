@@ -3,28 +3,16 @@ goarch: amd64
 pkg: github.com/bsv-blockchain/go-tx-map
 cpu: Intel(R) Core(TM) i9-9880H CPU @ 2.30GHz
 BenchmarkPut/Map/dolthub-16         	10000000	       147.8 ns/op	       0 B/op	       0 allocs/op
-BenchmarkPut/Map/cockroachdb-16     	10000000	        79.70 ns/op	       0 B/op	       0 allocs/op
 BenchmarkPut/Map/native-16          	10000000	        80.26 ns/op	       0 B/op	       0 allocs/op
-BenchmarkPut/Map/tidwall-16         	10000000	        94.92 ns/op	       1 B/op	       0 allocs/op
 BenchmarkPut/SplitMap/dolthub-16    	10000000	       651.5 ns/op	     285 B/op	       4 allocs/op
-BenchmarkPut/SplitMap/cockroachdb-16         	10000000	       634.9 ns/op	     285 B/op	       4 allocs/op
 BenchmarkPut/SplitMap/native-16              	10000000	       628.6 ns/op	     285 B/op	       4 allocs/op
-BenchmarkPut/SplitMap/tidwall-16             	10000000	       645.2 ns/op	     287 B/op	       4 allocs/op
 BenchmarkPut/MapUint64/dolthub-16            	10000000	       615.4 ns/op	     285 B/op	       4 allocs/op
-BenchmarkPut/MapUint64/cockroachdb-16        	10000000	       604.9 ns/op	     285 B/op	       4 allocs/op
 BenchmarkPut/MapUint64/native-16             	10000000	       607.8 ns/op	     285 B/op	       4 allocs/op
-BenchmarkPut/MapUint64/tidwall-16            	10000000	       610.0 ns/op	     286 B/op	       4 allocs/op
 BenchmarkPut/SplitMapUint64/dolthub-16       	10000000	       643.4 ns/op	     285 B/op	       4 allocs/op
-BenchmarkPut/SplitMapUint64/cockroachdb-16   	10000000	       633.3 ns/op	     285 B/op	       4 allocs/op
 BenchmarkPut/SplitMapUint64/native-16        	10000000	       632.1 ns/op	     285 B/op	       4 allocs/op
-BenchmarkPut/SplitMapUint64/tidwall-16       	10000000	       641.4 ns/op	     287 B/op	       4 allocs/op
 BenchmarkPut/LockFreeMapUint64/dolthub-16    	10000000	        35.89 ns/op	       0 B/op	       0 allocs/op
-BenchmarkPut/LockFreeMapUint64/cockroachdb-16         	10000000	        26.68 ns/op	       0 B/op	       0 allocs/op
 BenchmarkPut/LockFreeMapUint64/native-16              	10000000	        25.18 ns/op	       0 B/op	       0 allocs/op
-BenchmarkPut/LockFreeMapUint64/tidwall-16             	10000000	        52.53 ns/op	       0 B/op	       0 allocs/op
 BenchmarkPut/SplitLockFreeMapUint64/dolthub-16        	10000000	        63.96 ns/op	       0 B/op	       0 allocs/op
-BenchmarkPut/SplitLockFreeMapUint64/cockroachdb-16    	10000000	        60.58 ns/op	       0 B/op	       0 allocs/op
 BenchmarkPut/SplitLockFreeMapUint64/native-16         	10000000	        59.33 ns/op	       0 B/op	       0 allocs/op
-BenchmarkPut/SplitLockFreeMapUint64/tidwall-16        	10000000	        89.87 ns/op	       0 B/op	       0 allocs/op
 PASS
 ok  	github.com/bsv-blockchain/go-tx-map	84.714s
