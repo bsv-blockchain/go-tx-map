@@ -101,15 +101,6 @@ func TestMemoryConsumption(t *testing.T) {
 			return m
 		})
 	})
-	t.Run("Map/cockroachdb", func(t *testing.T) {
-		measure("Map/cockroachdb", func() interface{} {
-			m := NewCRSwissMap(memoryTestSize)
-			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(hashes[i])
-			}
-			return m
-		})
-	})
 	t.Run("Map/native", func(t *testing.T) {
 		measure("Map/native", func() interface{} {
 			m := NewNativeMap(memoryTestSize)
@@ -119,29 +110,10 @@ func TestMemoryConsumption(t *testing.T) {
 			return m
 		})
 	})
-	t.Run("Map/tidwall", func(t *testing.T) {
-		measure("Map/tidwall", func() interface{} {
-			m := NewTidwallMap(memoryTestSize)
-			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(hashes[i])
-			}
-			return m
-		})
-	})
-
 	// SplitMap
 	t.Run("SplitMap/dolthub", func(t *testing.T) {
 		measure("SplitMap/dolthub", func() interface{} {
 			m := NewSplitSwissMap(memoryTestSize)
-			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(hashes[i], uint64(i))
-			}
-			return m
-		})
-	})
-	t.Run("SplitMap/cockroachdb", func(t *testing.T) {
-		measure("SplitMap/cockroachdb", func() interface{} {
-			m := NewCRSplitSwissMap(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
 				_ = m.Put(hashes[i], uint64(i))
 			}
@@ -157,29 +129,10 @@ func TestMemoryConsumption(t *testing.T) {
 			return m
 		})
 	})
-	t.Run("SplitMap/tidwall", func(t *testing.T) {
-		measure("SplitMap/tidwall", func() interface{} {
-			m := NewTidwallSplitMap(memoryTestSize)
-			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(hashes[i], uint64(i))
-			}
-			return m
-		})
-	})
-
 	// MapUint64
 	t.Run("MapUint64/dolthub", func(t *testing.T) {
 		measure("MapUint64/dolthub", func() interface{} {
 			m := NewSwissMapUint64(memoryTestSize)
-			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(hashes[i], uint64(i))
-			}
-			return m
-		})
-	})
-	t.Run("MapUint64/cockroachdb", func(t *testing.T) {
-		measure("MapUint64/cockroachdb", func() interface{} {
-			m := NewCRSwissMapUint64(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
 				_ = m.Put(hashes[i], uint64(i))
 			}
@@ -195,29 +148,10 @@ func TestMemoryConsumption(t *testing.T) {
 			return m
 		})
 	})
-	t.Run("MapUint64/tidwall", func(t *testing.T) {
-		measure("MapUint64/tidwall", func() interface{} {
-			m := NewTidwallMapUint64(memoryTestSize)
-			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(hashes[i], uint64(i))
-			}
-			return m
-		})
-	})
-
 	// SplitMapUint64
 	t.Run("SplitMapUint64/dolthub", func(t *testing.T) {
 		measure("SplitMapUint64/dolthub", func() interface{} {
 			m := NewSplitSwissMapUint64(memoryTestSize)
-			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(hashes[i], uint64(i))
-			}
-			return m
-		})
-	})
-	t.Run("SplitMapUint64/cockroachdb", func(t *testing.T) {
-		measure("SplitMapUint64/cockroachdb", func() interface{} {
-			m := NewCRSplitSwissMapUint64(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
 				_ = m.Put(hashes[i], uint64(i))
 			}
@@ -233,29 +167,10 @@ func TestMemoryConsumption(t *testing.T) {
 			return m
 		})
 	})
-	t.Run("SplitMapUint64/tidwall", func(t *testing.T) {
-		measure("SplitMapUint64/tidwall", func() interface{} {
-			m := NewTidwallSplitMapUint64(memoryTestSize)
-			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(hashes[i], uint64(i))
-			}
-			return m
-		})
-	})
-
 	// LockFreeMapUint64
 	t.Run("LockFreeMapUint64/dolthub", func(t *testing.T) {
 		measure("LockFreeMapUint64/dolthub", func() interface{} {
 			m := NewSwissLockFreeMapUint64(memoryTestSize)
-			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(uint64(i), uint64(i))
-			}
-			return m
-		})
-	})
-	t.Run("LockFreeMapUint64/cockroachdb", func(t *testing.T) {
-		measure("LockFreeMapUint64/cockroachdb", func() interface{} {
-			m := NewCRSwissLockFreeMapUint64(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
 				_ = m.Put(uint64(i), uint64(i))
 			}
@@ -271,16 +186,6 @@ func TestMemoryConsumption(t *testing.T) {
 			return m
 		})
 	})
-	t.Run("LockFreeMapUint64/tidwall", func(t *testing.T) {
-		measure("LockFreeMapUint64/tidwall", func() interface{} {
-			m := NewTidwallLockFreeMapUint64(memoryTestSize)
-			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(uint64(i), uint64(i))
-			}
-			return m
-		})
-	})
-
 	// SplitLockFreeMapUint64
 	t.Run("SplitLockFreeMapUint64/dolthub", func(t *testing.T) {
 		measure("SplitLockFreeMapUint64/dolthub", func() interface{} {
@@ -291,27 +196,9 @@ func TestMemoryConsumption(t *testing.T) {
 			return m
 		})
 	})
-	t.Run("SplitLockFreeMapUint64/cockroachdb", func(t *testing.T) {
-		measure("SplitLockFreeMapUint64/cockroachdb", func() interface{} {
-			m := NewCRSplitSwissLockFreeMapUint64(memoryTestSize)
-			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(uint64(i), uint64(i))
-			}
-			return m
-		})
-	})
 	t.Run("SplitLockFreeMapUint64/native", func(t *testing.T) {
 		measure("SplitLockFreeMapUint64/native", func() interface{} {
 			m := NewNativeSplitLockFreeMapUint64(memoryTestSize)
-			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(uint64(i), uint64(i))
-			}
-			return m
-		})
-	})
-	t.Run("SplitLockFreeMapUint64/tidwall", func(t *testing.T) {
-		measure("SplitLockFreeMapUint64/tidwall", func() interface{} {
-			m := NewTidwallSplitLockFreeMapUint64(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
 				_ = m.Put(uint64(i), uint64(i))
 			}
@@ -335,7 +222,7 @@ func formatBytes(b uint64) string {
 
 // BenchmarkSwissMapPut measures Put performance for SwissMap.
 // BenchmarkPut measures Put performance for all map types.
-// Organized by map type, then by implementation (dolthub, cockroachdb, native, tidwall).
+// Organized by map type, then by implementation (dolthub, native).
 // Run with: go test -bench=BenchmarkPut -benchmem -benchtime=100000x
 func BenchmarkPut(b *testing.B) {
 	const size = 100000
@@ -350,14 +237,6 @@ func BenchmarkPut(b *testing.B) {
 			_ = m.Put(hashes[i%size])
 		}
 	})
-	b.Run("Map/cockroachdb", func(b *testing.B) {
-		m := NewCRSwissMap(size)
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Put(hashes[i%size])
-		}
-	})
 	b.Run("Map/native", func(b *testing.B) {
 		m := NewNativeMap(size)
 		b.ReportAllocs()
@@ -366,26 +245,9 @@ func BenchmarkPut(b *testing.B) {
 			_ = m.Put(hashes[i%size])
 		}
 	})
-	b.Run("Map/tidwall", func(b *testing.B) {
-		m := NewTidwallMap(size)
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Put(hashes[i%size])
-		}
-	})
-
 	// SplitMap: chainhash.Hash key, uint64 value
 	b.Run("SplitMap/dolthub", func(b *testing.B) {
 		m := NewSplitSwissMap(size)
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Put(hashes[i%size], uint64(i))
-		}
-	})
-	b.Run("SplitMap/cockroachdb", func(b *testing.B) {
-		m := NewCRSplitSwissMap(size)
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -400,26 +262,9 @@ func BenchmarkPut(b *testing.B) {
 			_ = m.Put(hashes[i%size], uint64(i))
 		}
 	})
-	b.Run("SplitMap/tidwall", func(b *testing.B) {
-		m := NewTidwallSplitMap(size)
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Put(hashes[i%size], uint64(i))
-		}
-	})
-
 	// MapUint64: chainhash.Hash key, uint64 value
 	b.Run("MapUint64/dolthub", func(b *testing.B) {
 		m := NewSwissMapUint64(size)
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Put(hashes[i%size], uint64(i))
-		}
-	})
-	b.Run("MapUint64/cockroachdb", func(b *testing.B) {
-		m := NewCRSwissMapUint64(size)
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -434,26 +279,9 @@ func BenchmarkPut(b *testing.B) {
 			_ = m.Put(hashes[i%size], uint64(i))
 		}
 	})
-	b.Run("MapUint64/tidwall", func(b *testing.B) {
-		m := NewTidwallMapUint64(size)
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Put(hashes[i%size], uint64(i))
-		}
-	})
-
 	// SplitMapUint64: chainhash.Hash key, uint64 value
 	b.Run("SplitMapUint64/dolthub", func(b *testing.B) {
 		m := NewSplitSwissMapUint64(size)
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Put(hashes[i%size], uint64(i))
-		}
-	})
-	b.Run("SplitMapUint64/cockroachdb", func(b *testing.B) {
-		m := NewCRSplitSwissMapUint64(size)
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -468,26 +296,9 @@ func BenchmarkPut(b *testing.B) {
 			_ = m.Put(hashes[i%size], uint64(i))
 		}
 	})
-	b.Run("SplitMapUint64/tidwall", func(b *testing.B) {
-		m := NewTidwallSplitMapUint64(size)
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Put(hashes[i%size], uint64(i))
-		}
-	})
-
 	// LockFreeMapUint64: uint64 key, uint64 value
 	b.Run("LockFreeMapUint64/dolthub", func(b *testing.B) {
 		m := NewSwissLockFreeMapUint64(size)
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Put(uint64(i%size), uint64(i))
-		}
-	})
-	b.Run("LockFreeMapUint64/cockroachdb", func(b *testing.B) {
-		m := NewCRSwissLockFreeMapUint64(size)
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -502,26 +313,9 @@ func BenchmarkPut(b *testing.B) {
 			_ = m.Put(uint64(i%size), uint64(i))
 		}
 	})
-	b.Run("LockFreeMapUint64/tidwall", func(b *testing.B) {
-		m := NewTidwallLockFreeMapUint64(size)
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Put(uint64(i%size), uint64(i))
-		}
-	})
-
 	// SplitLockFreeMapUint64: uint64 key, uint64 value
 	b.Run("SplitLockFreeMapUint64/dolthub", func(b *testing.B) {
 		m := NewSplitSwissLockFreeMapUint64(size)
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Put(uint64(i%size), uint64(i))
-		}
-	})
-	b.Run("SplitLockFreeMapUint64/cockroachdb", func(b *testing.B) {
-		m := NewCRSplitSwissLockFreeMapUint64(size)
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -536,18 +330,10 @@ func BenchmarkPut(b *testing.B) {
 			_ = m.Put(uint64(i%size), uint64(i))
 		}
 	})
-	b.Run("SplitLockFreeMapUint64/tidwall", func(b *testing.B) {
-		m := NewTidwallSplitLockFreeMapUint64(size)
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Put(uint64(i%size), uint64(i))
-		}
-	})
 }
 
 // BenchmarkGet measures Get performance for all map types.
-// Organized by map type, then by implementation (dolthub, cockroachdb, native, tidwall).
+// Organized by map type, then by implementation (dolthub, native).
 // Run with: go test -bench=BenchmarkGet -benchmem -benchtime=100000x
 func BenchmarkGet(b *testing.B) {
 	const size = 100000
@@ -565,17 +351,6 @@ func BenchmarkGet(b *testing.B) {
 			_ = m.Exists(hashes[i%size])
 		}
 	})
-	b.Run("Map/cockroachdb", func(b *testing.B) {
-		m := NewCRSwissMap(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i])
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Exists(hashes[i%size])
-		}
-	})
 	b.Run("Map/native", func(b *testing.B) {
 		m := NewNativeMap(size)
 		for i := 0; i < size; i++ {
@@ -587,32 +362,9 @@ func BenchmarkGet(b *testing.B) {
 			_ = m.Exists(hashes[i%size])
 		}
 	})
-	b.Run("Map/tidwall", func(b *testing.B) {
-		m := NewTidwallMap(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i])
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Exists(hashes[i%size])
-		}
-	})
-
 	// SplitMap: chainhash.Hash key, uint64 value
 	b.Run("SplitMap/dolthub", func(b *testing.B) {
 		m := NewSplitSwissMap(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_, _ = m.Get(hashes[i%size])
-		}
-	})
-	b.Run("SplitMap/cockroachdb", func(b *testing.B) {
-		m := NewCRSplitSwissMap(size)
 		for i := 0; i < size; i++ {
 			_ = m.Put(hashes[i], uint64(i))
 		}
@@ -633,32 +385,9 @@ func BenchmarkGet(b *testing.B) {
 			_, _ = m.Get(hashes[i%size])
 		}
 	})
-	b.Run("SplitMap/tidwall", func(b *testing.B) {
-		m := NewTidwallSplitMap(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_, _ = m.Get(hashes[i%size])
-		}
-	})
-
 	// MapUint64: chainhash.Hash key, uint64 value
 	b.Run("MapUint64/dolthub", func(b *testing.B) {
 		m := NewSwissMapUint64(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_, _ = m.Get(hashes[i%size])
-		}
-	})
-	b.Run("MapUint64/cockroachdb", func(b *testing.B) {
-		m := NewCRSwissMapUint64(size)
 		for i := 0; i < size; i++ {
 			_ = m.Put(hashes[i], uint64(i))
 		}
@@ -679,32 +408,9 @@ func BenchmarkGet(b *testing.B) {
 			_, _ = m.Get(hashes[i%size])
 		}
 	})
-	b.Run("MapUint64/tidwall", func(b *testing.B) {
-		m := NewTidwallMapUint64(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_, _ = m.Get(hashes[i%size])
-		}
-	})
-
 	// SplitMapUint64: chainhash.Hash key, uint64 value
 	b.Run("SplitMapUint64/dolthub", func(b *testing.B) {
 		m := NewSplitSwissMapUint64(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_, _ = m.Get(hashes[i%size])
-		}
-	})
-	b.Run("SplitMapUint64/cockroachdb", func(b *testing.B) {
-		m := NewCRSplitSwissMapUint64(size)
 		for i := 0; i < size; i++ {
 			_ = m.Put(hashes[i], uint64(i))
 		}
@@ -725,32 +431,9 @@ func BenchmarkGet(b *testing.B) {
 			_, _ = m.Get(hashes[i%size])
 		}
 	})
-	b.Run("SplitMapUint64/tidwall", func(b *testing.B) {
-		m := NewTidwallSplitMapUint64(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_, _ = m.Get(hashes[i%size])
-		}
-	})
-
 	// LockFreeMapUint64: uint64 key, uint64 value
 	b.Run("LockFreeMapUint64/dolthub", func(b *testing.B) {
 		m := NewSwissLockFreeMapUint64(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(uint64(i), uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_, _ = m.Get(uint64(i % size))
-		}
-	})
-	b.Run("LockFreeMapUint64/cockroachdb", func(b *testing.B) {
-		m := NewCRSwissLockFreeMapUint64(size)
 		for i := 0; i < size; i++ {
 			_ = m.Put(uint64(i), uint64(i))
 		}
@@ -771,32 +454,9 @@ func BenchmarkGet(b *testing.B) {
 			_, _ = m.Get(uint64(i % size))
 		}
 	})
-	b.Run("LockFreeMapUint64/tidwall", func(b *testing.B) {
-		m := NewTidwallLockFreeMapUint64(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(uint64(i), uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_, _ = m.Get(uint64(i % size))
-		}
-	})
-
 	// SplitLockFreeMapUint64: uint64 key, uint64 value
 	b.Run("SplitLockFreeMapUint64/dolthub", func(b *testing.B) {
 		m := NewSplitSwissLockFreeMapUint64(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(uint64(i), uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_, _ = m.Get(uint64(i % size))
-		}
-	})
-	b.Run("SplitLockFreeMapUint64/cockroachdb", func(b *testing.B) {
-		m := NewCRSplitSwissLockFreeMapUint64(size)
 		for i := 0; i < size; i++ {
 			_ = m.Put(uint64(i), uint64(i))
 		}
@@ -817,21 +477,10 @@ func BenchmarkGet(b *testing.B) {
 			_, _ = m.Get(uint64(i % size))
 		}
 	})
-	b.Run("SplitLockFreeMapUint64/tidwall", func(b *testing.B) {
-		m := NewTidwallSplitLockFreeMapUint64(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(uint64(i), uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_, _ = m.Get(uint64(i % size))
-		}
-	})
 }
 
 // BenchmarkExists measures Exists performance for all map types.
-// Organized by map type, then by implementation (dolthub, cockroachdb, native, tidwall).
+// Organized by map type, then by implementation (dolthub, native).
 // Run with: go test -bench=BenchmarkExists -benchmem -benchtime=100000x
 func BenchmarkExists(b *testing.B) {
 	const size = 100000
@@ -849,17 +498,6 @@ func BenchmarkExists(b *testing.B) {
 			_ = m.Exists(hashes[i%size])
 		}
 	})
-	b.Run("Map/cockroachdb", func(b *testing.B) {
-		m := NewCRSwissMap(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i])
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Exists(hashes[i%size])
-		}
-	})
 	b.Run("Map/native", func(b *testing.B) {
 		m := NewNativeMap(size)
 		for i := 0; i < size; i++ {
@@ -871,32 +509,9 @@ func BenchmarkExists(b *testing.B) {
 			_ = m.Exists(hashes[i%size])
 		}
 	})
-	b.Run("Map/tidwall", func(b *testing.B) {
-		m := NewTidwallMap(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i])
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Exists(hashes[i%size])
-		}
-	})
-
 	// SplitMap: chainhash.Hash key, uint64 value
 	b.Run("SplitMap/dolthub", func(b *testing.B) {
 		m := NewSplitSwissMap(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Exists(hashes[i%size])
-		}
-	})
-	b.Run("SplitMap/cockroachdb", func(b *testing.B) {
-		m := NewCRSplitSwissMap(size)
 		for i := 0; i < size; i++ {
 			_ = m.Put(hashes[i], uint64(i))
 		}
@@ -917,32 +532,9 @@ func BenchmarkExists(b *testing.B) {
 			_ = m.Exists(hashes[i%size])
 		}
 	})
-	b.Run("SplitMap/tidwall", func(b *testing.B) {
-		m := NewTidwallSplitMap(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Exists(hashes[i%size])
-		}
-	})
-
 	// MapUint64: chainhash.Hash key, uint64 value
 	b.Run("MapUint64/dolthub", func(b *testing.B) {
 		m := NewSwissMapUint64(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Exists(hashes[i%size])
-		}
-	})
-	b.Run("MapUint64/cockroachdb", func(b *testing.B) {
-		m := NewCRSwissMapUint64(size)
 		for i := 0; i < size; i++ {
 			_ = m.Put(hashes[i], uint64(i))
 		}
@@ -963,32 +555,9 @@ func BenchmarkExists(b *testing.B) {
 			_ = m.Exists(hashes[i%size])
 		}
 	})
-	b.Run("MapUint64/tidwall", func(b *testing.B) {
-		m := NewTidwallMapUint64(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Exists(hashes[i%size])
-		}
-	})
-
 	// SplitMapUint64: chainhash.Hash key, uint64 value
 	b.Run("SplitMapUint64/dolthub", func(b *testing.B) {
 		m := NewSplitSwissMapUint64(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Exists(hashes[i%size])
-		}
-	})
-	b.Run("SplitMapUint64/cockroachdb", func(b *testing.B) {
-		m := NewCRSplitSwissMapUint64(size)
 		for i := 0; i < size; i++ {
 			_ = m.Put(hashes[i], uint64(i))
 		}
@@ -1009,32 +578,9 @@ func BenchmarkExists(b *testing.B) {
 			_ = m.Exists(hashes[i%size])
 		}
 	})
-	b.Run("SplitMapUint64/tidwall", func(b *testing.B) {
-		m := NewTidwallSplitMapUint64(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Exists(hashes[i%size])
-		}
-	})
-
 	// LockFreeMapUint64: uint64 key, uint64 value
 	b.Run("LockFreeMapUint64/dolthub", func(b *testing.B) {
 		m := NewSwissLockFreeMapUint64(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(uint64(i), uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Exists(uint64(i % size))
-		}
-	})
-	b.Run("LockFreeMapUint64/cockroachdb", func(b *testing.B) {
-		m := NewCRSwissLockFreeMapUint64(size)
 		for i := 0; i < size; i++ {
 			_ = m.Put(uint64(i), uint64(i))
 		}
@@ -1055,32 +601,9 @@ func BenchmarkExists(b *testing.B) {
 			_ = m.Exists(uint64(i % size))
 		}
 	})
-	b.Run("LockFreeMapUint64/tidwall", func(b *testing.B) {
-		m := NewTidwallLockFreeMapUint64(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(uint64(i), uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Exists(uint64(i % size))
-		}
-	})
-
 	// SplitLockFreeMapUint64: uint64 key, uint64 value
 	b.Run("SplitLockFreeMapUint64/dolthub", func(b *testing.B) {
 		m := NewSplitSwissLockFreeMapUint64(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(uint64(i), uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Exists(uint64(i % size))
-		}
-	})
-	b.Run("SplitLockFreeMapUint64/cockroachdb", func(b *testing.B) {
-		m := NewCRSplitSwissLockFreeMapUint64(size)
 		for i := 0; i < size; i++ {
 			_ = m.Put(uint64(i), uint64(i))
 		}
@@ -1101,22 +624,11 @@ func BenchmarkExists(b *testing.B) {
 			_ = m.Exists(uint64(i % size))
 		}
 	})
-	b.Run("SplitLockFreeMapUint64/tidwall", func(b *testing.B) {
-		m := NewTidwallSplitLockFreeMapUint64(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(uint64(i), uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Exists(uint64(i % size))
-		}
-	})
 }
 
 // BenchmarkDelete measures Delete performance for all map types that support it.
 // Note: LockFree map types do not have Delete method.
-// Organized by map type, then by implementation (dolthub, cockroachdb, native, tidwall).
+// Organized by map type, then by implementation (dolthub, native).
 // Run with: go test -bench=BenchmarkDelete -benchmem -benchtime=100000x
 func BenchmarkDelete(b *testing.B) {
 	const size = 100000
@@ -1125,17 +637,6 @@ func BenchmarkDelete(b *testing.B) {
 	// Map: chainhash.Hash key, no value (existence only)
 	b.Run("Map/dolthub", func(b *testing.B) {
 		m := NewSwissMap(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i])
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Delete(hashes[i%size])
-		}
-	})
-	b.Run("Map/cockroachdb", func(b *testing.B) {
-		m := NewCRSwissMap(size)
 		for i := 0; i < size; i++ {
 			_ = m.Put(hashes[i])
 		}
@@ -1156,32 +657,9 @@ func BenchmarkDelete(b *testing.B) {
 			_ = m.Delete(hashes[i%size])
 		}
 	})
-	b.Run("Map/tidwall", func(b *testing.B) {
-		m := NewTidwallMap(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i])
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Delete(hashes[i%size])
-		}
-	})
-
 	// SplitMap: chainhash.Hash key, uint64 value
 	b.Run("SplitMap/dolthub", func(b *testing.B) {
 		m := NewSplitSwissMap(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Delete(hashes[i%size])
-		}
-	})
-	b.Run("SplitMap/cockroachdb", func(b *testing.B) {
-		m := NewCRSplitSwissMap(size)
 		for i := 0; i < size; i++ {
 			_ = m.Put(hashes[i], uint64(i))
 		}
@@ -1202,32 +680,9 @@ func BenchmarkDelete(b *testing.B) {
 			_ = m.Delete(hashes[i%size])
 		}
 	})
-	b.Run("SplitMap/tidwall", func(b *testing.B) {
-		m := NewTidwallSplitMap(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Delete(hashes[i%size])
-		}
-	})
-
 	// MapUint64: chainhash.Hash key, uint64 value
 	b.Run("MapUint64/dolthub", func(b *testing.B) {
 		m := NewSwissMapUint64(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Delete(hashes[i%size])
-		}
-	})
-	b.Run("MapUint64/cockroachdb", func(b *testing.B) {
-		m := NewCRSwissMapUint64(size)
 		for i := 0; i < size; i++ {
 			_ = m.Put(hashes[i], uint64(i))
 		}
@@ -1248,18 +703,6 @@ func BenchmarkDelete(b *testing.B) {
 			_ = m.Delete(hashes[i%size])
 		}
 	})
-	b.Run("MapUint64/tidwall", func(b *testing.B) {
-		m := NewTidwallMapUint64(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Delete(hashes[i%size])
-		}
-	})
-
 	// SplitMapUint64: chainhash.Hash key, uint64 value
 	b.Run("SplitMapUint64/dolthub", func(b *testing.B) {
 		m := NewSplitSwissMapUint64(size)
@@ -1272,30 +715,8 @@ func BenchmarkDelete(b *testing.B) {
 			_ = m.Delete(hashes[i%size])
 		}
 	})
-	b.Run("SplitMapUint64/cockroachdb", func(b *testing.B) {
-		m := NewCRSplitSwissMapUint64(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Delete(hashes[i%size])
-		}
-	})
 	b.Run("SplitMapUint64/native", func(b *testing.B) {
 		m := NewNativeSplitMapUint64(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
-		}
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = m.Delete(hashes[i%size])
-		}
-	})
-	b.Run("SplitMapUint64/tidwall", func(b *testing.B) {
-		m := NewTidwallSplitMapUint64(size)
 		for i := 0; i < size; i++ {
 			_ = m.Put(hashes[i], uint64(i))
 		}
@@ -1328,22 +749,6 @@ func BenchmarkSwissMapUint64Iter(b *testing.B) {
 		}
 	})
 
-	b.Run("cockroachdb", func(b *testing.B) {
-		m := NewCRSwissMapUint64(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
-		}
-
-		b.ReportAllocs()
-		b.ResetTimer()
-
-		for i := 0; i < b.N; i++ {
-			m.Iter(func(hash chainhash.Hash, value uint64) bool {
-				return false // continue
-			})
-		}
-	})
-
 	b.Run("native", func(b *testing.B) {
 		m := NewNativeMapUint64(size)
 		for i := 0; i < size; i++ {
@@ -1360,21 +765,6 @@ func BenchmarkSwissMapUint64Iter(b *testing.B) {
 		}
 	})
 
-	b.Run("tidwall", func(b *testing.B) {
-		m := NewTidwallMapUint64(size)
-		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
-		}
-
-		b.ReportAllocs()
-		b.ResetTimer()
-
-		for i := 0; i < b.N; i++ {
-			m.Iter(func(hash chainhash.Hash, value uint64) bool {
-				return false // continue
-			})
-		}
-	})
 }
 
 // BenchmarkSwissMapUint64Delete measures Delete performance for SwissMapUint64.
@@ -1400,24 +790,6 @@ func BenchmarkSwissMapUint64Delete(b *testing.B) {
 		}
 	})
 
-	b.Run("cockroachdb", func(b *testing.B) {
-		b.ReportAllocs()
-		b.ResetTimer()
-
-		for i := 0; i < b.N; i++ {
-			b.StopTimer()
-			m := NewCRSwissMapUint64(size)
-			for j := 0; j < size; j++ {
-				_ = m.Put(hashes[j], uint64(j))
-			}
-			b.StartTimer()
-
-			for j := 0; j < size; j++ {
-				_ = m.Delete(hashes[j])
-			}
-		}
-	})
-
 	b.Run("native", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -1425,24 +797,6 @@ func BenchmarkSwissMapUint64Delete(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			b.StopTimer()
 			m := NewNativeMapUint64(size)
-			for j := 0; j < size; j++ {
-				_ = m.Put(hashes[j], uint64(j))
-			}
-			b.StartTimer()
-
-			for j := 0; j < size; j++ {
-				_ = m.Delete(hashes[j])
-			}
-		}
-	})
-
-	b.Run("tidwall", func(b *testing.B) {
-		b.ReportAllocs()
-		b.ResetTimer()
-
-		for i := 0; i < b.N; i++ {
-			b.StopTimer()
-			m := NewTidwallMapUint64(size)
 			for j := 0; j < size; j++ {
 				_ = m.Put(hashes[j], uint64(j))
 			}
@@ -1517,17 +871,6 @@ func BenchmarkNewSplitSwissLockFreeMapUint64(b *testing.B) {
 		}
 	})
 
-	b.Run("cockroachdb", func(b *testing.B) {
-		b.ReportAllocs()
-		b.ResetTimer()
-
-		for i := 0; i < b.N; i++ {
-			if NewCRSplitSwissLockFreeMapUint64(1000) == nil {
-				b.Fatal(errMapShouldNotBeNil)
-			}
-		}
-	})
-
 	b.Run("native", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -1539,16 +882,6 @@ func BenchmarkNewSplitSwissLockFreeMapUint64(b *testing.B) {
 		}
 	})
 
-	b.Run("tidwall", func(b *testing.B) {
-		b.ReportAllocs()
-		b.ResetTimer()
-
-		for i := 0; i < b.N; i++ {
-			if NewTidwallSplitLockFreeMapUint64(1000) == nil {
-				b.Fatal(errMapShouldNotBeNil)
-			}
-		}
-	})
 }
 
 // BenchmarkNewSplitSwissMap measures constructing a SplitSwissMap.
@@ -1559,17 +892,6 @@ func BenchmarkNewSplitSwissMap(b *testing.B) {
 
 		for i := 0; i < b.N; i++ {
 			if NewSplitSwissMap(1000) == nil {
-				b.Fatal(errMapShouldNotBeNil)
-			}
-		}
-	})
-
-	b.Run("cockroachdb", func(b *testing.B) {
-		b.ReportAllocs()
-		b.ResetTimer()
-
-		for i := 0; i < b.N; i++ {
-			if NewCRSplitSwissMap(1000) == nil {
 				b.Fatal(errMapShouldNotBeNil)
 			}
 		}
@@ -1586,16 +908,6 @@ func BenchmarkNewSplitSwissMap(b *testing.B) {
 		}
 	})
 
-	b.Run("tidwall", func(b *testing.B) {
-		b.ReportAllocs()
-		b.ResetTimer()
-
-		for i := 0; i < b.N; i++ {
-			if NewTidwallSplitMap(1000) == nil {
-				b.Fatal(errMapShouldNotBeNil)
-			}
-		}
-	})
 }
 
 // BenchmarkNewSplitSwissMapUint64 measures constructing a SplitSwissMapUint64.
@@ -1606,17 +918,6 @@ func BenchmarkNewSplitSwissMapUint64(b *testing.B) {
 
 		for i := 0; i < b.N; i++ {
 			if NewSplitSwissMapUint64(1000) == nil {
-				b.Fatal(errMapShouldNotBeNil)
-			}
-		}
-	})
-
-	b.Run("cockroachdb", func(b *testing.B) {
-		b.ReportAllocs()
-		b.ResetTimer()
-
-		for i := 0; i < b.N; i++ {
-			if NewCRSplitSwissMapUint64(1000) == nil {
 				b.Fatal(errMapShouldNotBeNil)
 			}
 		}
@@ -1633,16 +934,6 @@ func BenchmarkNewSplitSwissMapUint64(b *testing.B) {
 		}
 	})
 
-	b.Run("tidwall", func(b *testing.B) {
-		b.ReportAllocs()
-		b.ResetTimer()
-
-		for i := 0; i < b.N; i++ {
-			if NewTidwallSplitMapUint64(1000) == nil {
-				b.Fatal(errMapShouldNotBeNil)
-			}
-		}
-	})
 }
 
 // BenchmarkNewSwissLockFreeMapUint64 measures constructing a SwissLockFreeMapUint64.
@@ -1653,17 +944,6 @@ func BenchmarkNewSwissLockFreeMapUint64(b *testing.B) {
 
 		for i := 0; i < b.N; i++ {
 			if NewSwissLockFreeMapUint64(1000) == nil {
-				b.Fatal(errMapShouldNotBeNil)
-			}
-		}
-	})
-
-	b.Run("cockroachdb", func(b *testing.B) {
-		b.ReportAllocs()
-		b.ResetTimer()
-
-		for i := 0; i < b.N; i++ {
-			if NewCRSwissLockFreeMapUint64(1000) == nil {
 				b.Fatal(errMapShouldNotBeNil)
 			}
 		}
@@ -1680,16 +960,6 @@ func BenchmarkNewSwissLockFreeMapUint64(b *testing.B) {
 		}
 	})
 
-	b.Run("tidwall", func(b *testing.B) {
-		b.ReportAllocs()
-		b.ResetTimer()
-
-		for i := 0; i < b.N; i++ {
-			if NewTidwallLockFreeMapUint64(1000) == nil {
-				b.Fatal(errMapShouldNotBeNil)
-			}
-		}
-	})
 }
 
 // BenchmarkNewSwissMap measures constructing a SwissMap.
@@ -1700,17 +970,6 @@ func BenchmarkNewSwissMap(b *testing.B) {
 
 		for i := 0; i < b.N; i++ {
 			if NewSwissMap(1000) == nil {
-				b.Fatal(errMapShouldNotBeNil)
-			}
-		}
-	})
-
-	b.Run("cockroachdb", func(b *testing.B) {
-		b.ReportAllocs()
-		b.ResetTimer()
-
-		for i := 0; i < b.N; i++ {
-			if NewCRSwissMap(1000) == nil {
 				b.Fatal(errMapShouldNotBeNil)
 			}
 		}
@@ -1727,16 +986,6 @@ func BenchmarkNewSwissMap(b *testing.B) {
 		}
 	})
 
-	b.Run("tidwall", func(b *testing.B) {
-		b.ReportAllocs()
-		b.ResetTimer()
-
-		for i := 0; i < b.N; i++ {
-			if NewTidwallMap(1000) == nil {
-				b.Fatal(errMapShouldNotBeNil)
-			}
-		}
-	})
 }
 
 // BenchmarkNewSwissMapUint64 measures constructing a SwissMapUint64.
@@ -1747,17 +996,6 @@ func BenchmarkNewSwissMapUint64(b *testing.B) {
 
 		for i := 0; i < b.N; i++ {
 			if NewSwissMapUint64(1000) == nil {
-				b.Fatal(errMapShouldNotBeNil)
-			}
-		}
-	})
-
-	b.Run("cockroachdb", func(b *testing.B) {
-		b.ReportAllocs()
-		b.ResetTimer()
-
-		for i := 0; i < b.N; i++ {
-			if NewCRSwissMapUint64(1000) == nil {
 				b.Fatal(errMapShouldNotBeNil)
 			}
 		}
@@ -1774,14 +1012,4 @@ func BenchmarkNewSwissMapUint64(b *testing.B) {
 		}
 	})
 
-	b.Run("tidwall", func(b *testing.B) {
-		b.ReportAllocs()
-		b.ResetTimer()
-
-		for i := 0; i < b.N; i++ {
-			if NewTidwallMapUint64(1000) == nil {
-				b.Fatal(errMapShouldNotBeNil)
-			}
-		}
-	})
 }

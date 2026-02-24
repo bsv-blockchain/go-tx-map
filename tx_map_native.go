@@ -1,5 +1,9 @@
 // Package txmap provides alternative implementations using Go's native map
 // (which uses Swiss Tables in Go 1.24+) for benchmarking purposes.
+//
+// Default factories (NewDefault*) return native implementations, which are
+// recommended for general-purpose use due to their speed. Use dolthub
+// implementations (NewSwiss*, NewSplitSwiss*) when memory is constrained.
 package txmap
 
 import (
@@ -33,6 +37,12 @@ func NewNativeMap(length uint32) *NativeMap {
 	return &NativeMap{
 		m: make(map[chainhash.Hash]struct{}, length),
 	}
+}
+
+// NewDefaultMap returns a native map implementation. Use for general-purpose
+// hash-only maps when speed matters. Use NewSwissMap when memory is constrained.
+func NewDefaultMap(length uint32) *NativeMap {
+	return NewNativeMap(length)
 }
 
 // Exists checks if the given hash exists in the map.
@@ -201,6 +211,12 @@ func NewNativeMapUint64(length uint32) *NativeMapUint64 {
 	return &NativeMapUint64{
 		m: make(map[chainhash.Hash]uint64, length),
 	}
+}
+
+// NewDefaultMapUint64 returns a native map implementation. Use for general-purpose
+// hash-to-uint64 maps when speed matters. Use NewSwissMapUint64 when memory is constrained.
+func NewDefaultMapUint64(length uint32) *NativeMapUint64 {
+	return NewNativeMapUint64(length)
 }
 
 // Map returns the underlying native map used by NativeMapUint64.
@@ -473,6 +489,12 @@ func NewNativeLockFreeMapUint64(length int) *NativeLockFreeMapUint64 {
 	}
 }
 
+// NewDefaultLockFreeMapUint64 returns a native lock-free map. Use for general-purpose
+// uint64-to-uint64 maps when speed matters. Use NewSwissLockFreeMapUint64 when memory is constrained.
+func NewDefaultLockFreeMapUint64(length int) *NativeLockFreeMapUint64 {
+	return NewNativeLockFreeMapUint64(length)
+}
+
 // Map returns the underlying native map used by NativeLockFreeMapUint64.
 // It provides access to the map for operations that do not require locking.
 //
@@ -589,6 +611,12 @@ func NewNativeSplitMap(length int, buckets ...uint16) *NativeSplitMap {
 	}
 
 	return m
+}
+
+// NewDefaultSplitMap returns a native split map implementation. Use for general-purpose
+// hash-to-uint64 split maps when speed matters. Use NewSplitSwissMap when memory is constrained.
+func NewDefaultSplitMap(length int, buckets ...uint16) *NativeSplitMap {
+	return NewNativeSplitMap(length, buckets...)
 }
 
 // Buckets returns the number of buckets in the NativeSplitMap.
@@ -835,6 +863,12 @@ func NewNativeSplitMapUint64(length uint32, buckets ...uint16) *NativeSplitMapUi
 	return m
 }
 
+// NewDefaultSplitMapUint64 returns a native split map implementation. Use for general-purpose
+// hash-to-uint64 split maps when speed matters. Use NewSplitSwissMapUint64 when memory is constrained.
+func NewDefaultSplitMapUint64(length uint32, buckets ...uint16) *NativeSplitMapUint64 {
+	return NewNativeSplitMapUint64(length, buckets...)
+}
+
 // Exists checks if the given hash exists in the map.
 // It calculates the bucket index using the Bytes2Uint16Buckets function and checks the corresponding bucket.
 //
@@ -1042,6 +1076,12 @@ func NewNativeSplitLockFreeMapUint64(length int, buckets ...uint64) *NativeSplit
 	}
 
 	return m
+}
+
+// NewDefaultSplitLockFreeMapUint64 returns a native split lock-free map. Use for general-purpose
+// uint64-to-uint64 split maps when speed matters. Use NewSplitSwissLockFreeMapUint64 when memory is constrained.
+func NewDefaultSplitLockFreeMapUint64(length int, buckets ...uint64) *NativeSplitLockFreeMapUint64 {
+	return NewNativeSplitLockFreeMapUint64(length, buckets...)
 }
 
 // Exists checks if the given hash exists in the map.
