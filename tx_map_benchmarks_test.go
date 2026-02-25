@@ -710,7 +710,7 @@ func BenchmarkBytes2Uint16Buckets(b *testing.B) {
 func BenchmarkConvertSyncMapToUint32Slice(b *testing.B) {
 	var sm sync.Map
 	for i := 0; i < 1000; i++ {
-		sm.Store(uint32(i), struct{}{}) //nolint:gosec // safe cast, i < 1000
+		sm.Store(uint32(i), struct{}{})
 	}
 
 	b.ReportAllocs()
@@ -728,7 +728,7 @@ func BenchmarkConvertSyncMapToUint32Slice(b *testing.B) {
 func BenchmarkConvertSyncedMapToUint32Slice(b *testing.B) {
 	sm := NewSyncedMap[int, []uint32]()
 	for i := 0; i < 1000; i++ {
-		sm.Set(i, []uint32{uint32(i)}) //nolint:gosec // safe cast, i < 1000
+		sm.Set(i, []uint32{uint32(i)})
 	}
 
 	b.ReportAllocs()
