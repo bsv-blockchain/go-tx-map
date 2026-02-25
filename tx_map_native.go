@@ -15,8 +15,7 @@ import (
 	"github.com/bsv-blockchain/go-bt/v2/chainhash"
 )
 
-// Map is the default hash-only map type using native implementation.
-// Use NewDefaultMap to create instances.
+// Map is the default hash-only map type (native).
 type Map = NativeMap
 
 // NativeMap is a simple concurrent-safe map that uses Go's native map
@@ -43,8 +42,7 @@ func NewNativeMap(length uint32) *NativeMap {
 	}
 }
 
-// NewDefaultMap returns a native map implementation. Use for general-purpose
-// hash-only maps when speed matters. Use NewSwissMap when memory is constrained.
+// NewDefaultMap returns a native map.
 func NewDefaultMap(length uint32) *NativeMap {
 	return NewNativeMap(length)
 }
@@ -194,11 +192,11 @@ func (s *NativeMap) Iter(f func(hash chainhash.Hash, value uint64) bool) {
 // check that NativeMapUint64 implements TxMap
 var _ TxMap = (*NativeMapUint64)(nil)
 
-// NativeMapUint64 is a concurrent-safe map that uses Go's native map to store
 // MapUint64 is the default hash-to-uint64 map type using native implementation.
 // Use NewDefaultMapUint64 to create instances.
 type MapUint64 = NativeMapUint64
 
+// NativeMapUint64 is a concurrent-safe map that uses Go's native map to store
 // transaction hashes as keys and uint64 values.
 type NativeMapUint64 struct {
 	mu     sync.RWMutex
@@ -599,13 +597,12 @@ func (s *NativeLockFreeMapUint64) Length() int {
 // check that NativeSplitMap implements TxMap
 var _ TxMap = (*NativeSplitMap)(nil)
 
-// NativeSplitMap is a map that splits the data into multiple buckets to reduce contention.
-// It uses NativeMapUint64 for each bucket to store the hashes and their associated uint64 values.
 // SplitMap is the default split map type using native implementation.
 // Use NewDefaultSplitMap to create instances.
 type SplitMap = NativeSplitMap
 
-// Since NativeMapUint64 is concurrent-safe, NativeSplitMap can handle concurrent access without additional locks.
+// NativeSplitMap splits the data into multiple buckets to reduce contention.
+// It uses NativeMapUint64 for each bucket. NativeMapUint64 is concurrent-safe.
 type NativeSplitMap struct {
 	m           map[uint16]*NativeMapUint64
 	nrOfBuckets uint16
@@ -855,13 +852,12 @@ func (g *NativeSplitMap) Iter(f func(hash chainhash.Hash, value uint64) bool) {
 // check that NativeSplitMapUint64 implements TxMap
 var _ TxMap = (*NativeSplitMapUint64)(nil)
 
-// NativeSplitMapUint64 is a map that splits the data into multiple buckets to reduce contention.
-// It uses NativeMapUint64 for each bucket to store the hashes and their associated uint64 values.
 // SplitMapUint64 is the default split map uint64 type using native implementation.
 // Use NewDefaultSplitMapUint64 to create instances.
 type SplitMapUint64 = NativeSplitMapUint64
 
-// The number of buckets is fixed at 1024, and the length is divided by this number to determine the size of each bucket.
+// NativeSplitMapUint64 splits the data into multiple buckets to reduce contention.
+// It uses NativeMapUint64 for each bucket. Buckets is fixed at 1024.
 type NativeSplitMapUint64 struct {
 	m           map[uint16]*NativeMapUint64
 	nrOfBuckets uint16
@@ -1113,19 +1109,17 @@ func NewNativeSplitLockFreeMapUint64(length int, buckets ...uint64) *NativeSplit
 	return m
 }
 
-// NewDefaultSplitLockFreeMapUint64 returns a native split lock-free map. Use for general-purpose
-// uint64-to-uint64 split maps when speed matters. Use NewSplitLockFreeMapDolthubUint64 when memory is constrained.
+// NewDefaultSplitLockFreeMapUint64 returns a native split lock-free map.
 func NewDefaultSplitLockFreeMapUint64(length int, buckets ...uint64) *NativeSplitLockFreeMapUint64 {
 	return NewNativeSplitLockFreeMapUint64(length, buckets...)
 }
 
-// NewSplitLockFreeMapNativeUint64 creates a split lock-free map using Go's native map (faster for most operations).
+// NewSplitLockFreeMapNativeUint64 creates a split lock-free map using Go's native map.
 func NewSplitLockFreeMapNativeUint64(length int, buckets ...uint64) *NativeSplitLockFreeMapUint64 {
 	return NewNativeSplitLockFreeMapUint64(length, buckets...)
 }
 
-// SplitLockFreeMapUint64Like is the interface implemented by both SplitSwissLockFreeMapUint64 and NativeSplitLockFreeMapUint64.
-// Use when you need to choose the backend at runtime (e.g. NewSplitLockFreeMapNativeUint64 vs NewSplitLockFreeMapDolthubUint64).
+// SplitLockFreeMapUint64Like is the interface for split lock-free maps (dolthub or native).
 type SplitLockFreeMapUint64Like interface {
 	Put(hash, value uint64) error
 	Get(hash uint64) (uint64, bool)
@@ -1135,7 +1129,7 @@ type SplitLockFreeMapUint64Like interface {
 	DeleteBucket(h uint64)
 }
 
-// LockFreeMapUint64Iterable is implemented by bucket types that support Iter.
+// LockFreeMapUint64Iterable has Iter for bucket iteration.
 type LockFreeMapUint64Iterable interface {
 	Iter(f func(k, v uint64) (stop bool))
 }

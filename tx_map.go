@@ -1111,7 +1111,6 @@ func NewSplitLockFreeMapDolthubUint64(length int, buckets ...uint64) *SplitSwiss
 }
 
 // NewSplitSwissLockFreeMapUint64 creates a new SplitSwissLockFreeMapUint64 with the specified initial length.
-// Deprecated: Use NewSplitLockFreeMapDolthubUint64 for dolthub or NewSplitLockFreeMapNativeUint64 for native.
 func NewSplitSwissLockFreeMapUint64(length int, buckets ...uint64) *SplitSwissLockFreeMapUint64 {
 	return newSplitSwissLockFreeMapUint64(length, buckets...)
 }

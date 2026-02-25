@@ -14,21 +14,23 @@ import (
 const errMapShouldNotBeNil = "map should not be nil"
 
 // memoryTestSize is the number of entries used for memory footprint measurement.
-const memoryTestSize = 100_000_000
+const memoryTestSize = 1_000_000
 
 // testHashesCacheDir is the directory for cached hash fixtures.
 const testHashesCacheDir = "testdata"
 
 // maxHashesCacheSize is the maximum number of entries stored in the cache file.
 // A single file holds this many hashes; smaller requests use the first N entries.
-const maxHashesCacheSize = 100_000_000
+const maxHashesCacheSize = 1_000_000
 
 // getTestHashes returns size chainhash.Hash values. It loads from a single cache file
 // (testdata/hashes.bin) if it exists and has enough entries; otherwise generates
 // up to maxHashesCacheSize entries and writes the cache file.
+//
+//nolint:gocognit // cache load/generate logic with multiple branches
 func getTestHashes(size int) []chainhash.Hash {
 	path := filepath.Join(testHashesCacheDir, "hashes.bin")
-	if data, err := os.ReadFile(path); err == nil {
+	if data, err := os.ReadFile(path); err == nil { //nolint:gosec // G304: path from constant, not user input
 		n := len(data) / 32
 		if n >= size {
 			hashes := make([]chainhash.Hash, size)
@@ -49,12 +51,12 @@ func getTestHashes(size int) []chainhash.Hash {
 		hashes[i] = chainhash.Hash{byte(i), byte(i >> 8), byte(i >> 16), byte(i >> 24)}
 	}
 
-	if err := os.MkdirAll(testHashesCacheDir, 0755); err == nil {
+	if err := os.MkdirAll(testHashesCacheDir, 0o750); err == nil {
 		data := make([]byte, genSize*32)
 		for i := 0; i < genSize; i++ {
 			copy(data[i*32:], hashes[i][:])
 		}
-		_ = os.WriteFile(path, data, 0644)
+		_ = os.WriteFile(path, data, 0o600)
 	}
 
 	// Return only the requested size (first size entries)
@@ -67,6 +69,8 @@ func getTestHashes(size int) []chainhash.Hash {
 // TestMemoryConsumption measures heap memory used by each map implementation
 // when populated with a static number of entries (memoryTestSize).
 // Run with: go test -v -run TestMemoryConsumption
+//
+//nolint:gocognit,gocyclo // repetitive measure calls for each map type
 func TestMemoryConsumption(t *testing.T) {
 	hashes := getTestHashes(memoryTestSize)
 
@@ -92,7 +96,7 @@ func TestMemoryConsumption(t *testing.T) {
 	}
 
 	// Map: chainhash.Hash key, no value
-	t.Run("Map/dolthub", func(t *testing.T) {
+	t.Run("Map/dolthub", func(_ *testing.T) {
 		measure("Map/dolthub", func() interface{} {
 			m := NewSwissMap(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
@@ -101,7 +105,7 @@ func TestMemoryConsumption(t *testing.T) {
 			return m
 		})
 	})
-	t.Run("Map/native", func(t *testing.T) {
+	t.Run("Map/native", func(_ *testing.T) {
 		measure("Map/native", func() interface{} {
 			m := NewNativeMap(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
@@ -111,96 +115,96 @@ func TestMemoryConsumption(t *testing.T) {
 		})
 	})
 	// SplitMap
-	t.Run("SplitMap/dolthub", func(t *testing.T) {
+	t.Run("SplitMap/dolthub", func(_ *testing.T) {
 		measure("SplitMap/dolthub", func() interface{} {
 			m := NewSplitSwissMap(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(hashes[i], uint64(i))
+				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 			}
 			return m
 		})
 	})
-	t.Run("SplitMap/native", func(t *testing.T) {
+	t.Run("SplitMap/native", func(_ *testing.T) {
 		measure("SplitMap/native", func() interface{} {
 			m := NewNativeSplitMap(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(hashes[i], uint64(i))
+				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 			}
 			return m
 		})
 	})
 	// MapUint64
-	t.Run("MapUint64/dolthub", func(t *testing.T) {
+	t.Run("MapUint64/dolthub", func(_ *testing.T) {
 		measure("MapUint64/dolthub", func() interface{} {
 			m := NewSwissMapUint64(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(hashes[i], uint64(i))
+				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 			}
 			return m
 		})
 	})
-	t.Run("MapUint64/native", func(t *testing.T) {
+	t.Run("MapUint64/native", func(_ *testing.T) {
 		measure("MapUint64/native", func() interface{} {
 			m := NewNativeMapUint64(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(hashes[i], uint64(i))
+				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 			}
 			return m
 		})
 	})
 	// SplitMapUint64
-	t.Run("SplitMapUint64/dolthub", func(t *testing.T) {
+	t.Run("SplitMapUint64/dolthub", func(_ *testing.T) {
 		measure("SplitMapUint64/dolthub", func() interface{} {
 			m := NewSplitSwissMapUint64(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(hashes[i], uint64(i))
+				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 			}
 			return m
 		})
 	})
-	t.Run("SplitMapUint64/native", func(t *testing.T) {
+	t.Run("SplitMapUint64/native", func(_ *testing.T) {
 		measure("SplitMapUint64/native", func() interface{} {
 			m := NewNativeSplitMapUint64(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(hashes[i], uint64(i))
+				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 			}
 			return m
 		})
 	})
 	// LockFreeMapUint64
-	t.Run("LockFreeMapUint64/dolthub", func(t *testing.T) {
+	t.Run("LockFreeMapUint64/dolthub", func(_ *testing.T) {
 		measure("LockFreeMapUint64/dolthub", func() interface{} {
 			m := NewSwissLockFreeMapUint64(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(uint64(i), uint64(i))
+				_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, memoryTestSize]
 			}
 			return m
 		})
 	})
-	t.Run("LockFreeMapUint64/native", func(t *testing.T) {
+	t.Run("LockFreeMapUint64/native", func(_ *testing.T) {
 		measure("LockFreeMapUint64/native", func() interface{} {
 			m := NewNativeLockFreeMapUint64(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(uint64(i), uint64(i))
+				_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, memoryTestSize]
 			}
 			return m
 		})
 	})
 	// SplitLockFreeMapUint64
-	t.Run("SplitLockFreeMapUint64/dolthub", func(t *testing.T) {
+	t.Run("SplitLockFreeMapUint64/dolthub", func(_ *testing.T) {
 		measure("SplitLockFreeMapUint64/dolthub", func() interface{} {
 			m := NewSplitSwissLockFreeMapUint64(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(uint64(i), uint64(i))
+				_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, memoryTestSize]
 			}
 			return m
 		})
 	})
-	t.Run("SplitLockFreeMapUint64/native", func(t *testing.T) {
+	t.Run("SplitLockFreeMapUint64/native", func(_ *testing.T) {
 		measure("SplitLockFreeMapUint64/native", func() interface{} {
 			m := NewNativeSplitLockFreeMapUint64(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(uint64(i), uint64(i))
+				_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, memoryTestSize]
 			}
 			return m
 		})
@@ -224,6 +228,8 @@ func formatBytes(b uint64) string {
 // BenchmarkPut measures Put performance for all map types.
 // Organized by map type, then by implementation (dolthub, native).
 // Run with: go test -bench=BenchmarkPut -benchmem -benchtime=100000x
+//
+//nolint:gocognit,gocyclo // benchmark structure with many map type variants
 func BenchmarkPut(b *testing.B) {
 	const size = 100000
 	hashes := getTestHashes(size)
@@ -251,7 +257,7 @@ func BenchmarkPut(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = m.Put(hashes[i%size], uint64(i))
+			_ = m.Put(hashes[i%size], uint64(i)) //nolint:gosec // G115: i from benchmark loop, always >= 0
 		}
 	})
 	b.Run("SplitMap/native", func(b *testing.B) {
@@ -259,7 +265,7 @@ func BenchmarkPut(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = m.Put(hashes[i%size], uint64(i))
+			_ = m.Put(hashes[i%size], uint64(i)) //nolint:gosec // G115: i from benchmark loop, always >= 0
 		}
 	})
 	// MapUint64: chainhash.Hash key, uint64 value
@@ -268,7 +274,7 @@ func BenchmarkPut(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = m.Put(hashes[i%size], uint64(i))
+			_ = m.Put(hashes[i%size], uint64(i)) //nolint:gosec // G115: i from benchmark loop, always >= 0
 		}
 	})
 	b.Run("MapUint64/native", func(b *testing.B) {
@@ -276,7 +282,7 @@ func BenchmarkPut(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = m.Put(hashes[i%size], uint64(i))
+			_ = m.Put(hashes[i%size], uint64(i)) //nolint:gosec // G115: i from benchmark loop, always >= 0
 		}
 	})
 	// SplitMapUint64: chainhash.Hash key, uint64 value
@@ -285,7 +291,7 @@ func BenchmarkPut(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = m.Put(hashes[i%size], uint64(i))
+			_ = m.Put(hashes[i%size], uint64(i)) //nolint:gosec // G115: i from benchmark loop, always >= 0
 		}
 	})
 	b.Run("SplitMapUint64/native", func(b *testing.B) {
@@ -293,7 +299,7 @@ func BenchmarkPut(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = m.Put(hashes[i%size], uint64(i))
+			_ = m.Put(hashes[i%size], uint64(i)) //nolint:gosec // G115: i from benchmark loop, always >= 0
 		}
 	})
 	// LockFreeMapUint64: uint64 key, uint64 value
@@ -302,7 +308,7 @@ func BenchmarkPut(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = m.Put(uint64(i%size), uint64(i))
+			_ = m.Put(uint64(i%size), uint64(i)) //nolint:gosec // G115: i from benchmark loop, always >= 0
 		}
 	})
 	b.Run("LockFreeMapUint64/native", func(b *testing.B) {
@@ -310,7 +316,7 @@ func BenchmarkPut(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = m.Put(uint64(i%size), uint64(i))
+			_ = m.Put(uint64(i%size), uint64(i)) //nolint:gosec // G115: i from benchmark loop, always >= 0
 		}
 	})
 	// SplitLockFreeMapUint64: uint64 key, uint64 value
@@ -319,7 +325,7 @@ func BenchmarkPut(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = m.Put(uint64(i%size), uint64(i))
+			_ = m.Put(uint64(i%size), uint64(i)) //nolint:gosec // G115: i from benchmark loop, always >= 0
 		}
 	})
 	b.Run("SplitLockFreeMapUint64/native", func(b *testing.B) {
@@ -327,7 +333,7 @@ func BenchmarkPut(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = m.Put(uint64(i%size), uint64(i))
+			_ = m.Put(uint64(i%size), uint64(i)) //nolint:gosec // G115: i from benchmark loop, always >= 0
 		}
 	})
 }
@@ -335,6 +341,8 @@ func BenchmarkPut(b *testing.B) {
 // BenchmarkGet measures Get performance for all map types.
 // Organized by map type, then by implementation (dolthub, native).
 // Run with: go test -bench=BenchmarkGet -benchmem -benchtime=100000x
+//
+//nolint:gocognit,gocyclo // benchmark structure with many map type variants
 func BenchmarkGet(b *testing.B) {
 	const size = 100000
 	hashes := getTestHashes(size)
@@ -366,7 +374,7 @@ func BenchmarkGet(b *testing.B) {
 	b.Run("SplitMap/dolthub", func(b *testing.B) {
 		m := NewSplitSwissMap(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
+			_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -377,7 +385,7 @@ func BenchmarkGet(b *testing.B) {
 	b.Run("SplitMap/native", func(b *testing.B) {
 		m := NewNativeSplitMap(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
+			_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -389,7 +397,7 @@ func BenchmarkGet(b *testing.B) {
 	b.Run("MapUint64/dolthub", func(b *testing.B) {
 		m := NewSwissMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
+			_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -400,7 +408,7 @@ func BenchmarkGet(b *testing.B) {
 	b.Run("MapUint64/native", func(b *testing.B) {
 		m := NewNativeMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
+			_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -412,7 +420,7 @@ func BenchmarkGet(b *testing.B) {
 	b.Run("SplitMapUint64/dolthub", func(b *testing.B) {
 		m := NewSplitSwissMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
+			_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -423,7 +431,7 @@ func BenchmarkGet(b *testing.B) {
 	b.Run("SplitMapUint64/native", func(b *testing.B) {
 		m := NewNativeSplitMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
+			_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -435,46 +443,46 @@ func BenchmarkGet(b *testing.B) {
 	b.Run("LockFreeMapUint64/dolthub", func(b *testing.B) {
 		m := NewSwissLockFreeMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(uint64(i), uint64(i))
+			_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, size]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_, _ = m.Get(uint64(i % size))
+			_, _ = m.Get(uint64(i % size)) //nolint:gosec // G115: i from benchmark loop, always >= 0
 		}
 	})
 	b.Run("LockFreeMapUint64/native", func(b *testing.B) {
 		m := NewNativeLockFreeMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(uint64(i), uint64(i))
+			_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, size]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_, _ = m.Get(uint64(i % size))
+			_, _ = m.Get(uint64(i % size)) //nolint:gosec // G115: i from benchmark loop, always >= 0
 		}
 	})
 	// SplitLockFreeMapUint64: uint64 key, uint64 value
 	b.Run("SplitLockFreeMapUint64/dolthub", func(b *testing.B) {
 		m := NewSplitSwissLockFreeMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(uint64(i), uint64(i))
+			_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, size]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_, _ = m.Get(uint64(i % size))
+			_, _ = m.Get(uint64(i % size)) //nolint:gosec // G115: i from benchmark loop, always >= 0
 		}
 	})
 	b.Run("SplitLockFreeMapUint64/native", func(b *testing.B) {
 		m := NewNativeSplitLockFreeMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(uint64(i), uint64(i))
+			_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, size]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_, _ = m.Get(uint64(i % size))
+			_, _ = m.Get(uint64(i % size)) //nolint:gosec // G115: i from benchmark loop, always >= 0
 		}
 	})
 }
@@ -482,6 +490,8 @@ func BenchmarkGet(b *testing.B) {
 // BenchmarkExists measures Exists performance for all map types.
 // Organized by map type, then by implementation (dolthub, native).
 // Run with: go test -bench=BenchmarkExists -benchmem -benchtime=100000x
+//
+//nolint:gocognit,gocyclo // benchmark structure with many map type variants
 func BenchmarkExists(b *testing.B) {
 	const size = 100000
 	hashes := getTestHashes(size)
@@ -513,7 +523,7 @@ func BenchmarkExists(b *testing.B) {
 	b.Run("SplitMap/dolthub", func(b *testing.B) {
 		m := NewSplitSwissMap(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
+			_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -524,7 +534,7 @@ func BenchmarkExists(b *testing.B) {
 	b.Run("SplitMap/native", func(b *testing.B) {
 		m := NewNativeSplitMap(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
+			_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -536,7 +546,7 @@ func BenchmarkExists(b *testing.B) {
 	b.Run("MapUint64/dolthub", func(b *testing.B) {
 		m := NewSwissMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
+			_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -547,7 +557,7 @@ func BenchmarkExists(b *testing.B) {
 	b.Run("MapUint64/native", func(b *testing.B) {
 		m := NewNativeMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
+			_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -559,7 +569,7 @@ func BenchmarkExists(b *testing.B) {
 	b.Run("SplitMapUint64/dolthub", func(b *testing.B) {
 		m := NewSplitSwissMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
+			_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -570,7 +580,7 @@ func BenchmarkExists(b *testing.B) {
 	b.Run("SplitMapUint64/native", func(b *testing.B) {
 		m := NewNativeSplitMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
+			_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -582,54 +592,56 @@ func BenchmarkExists(b *testing.B) {
 	b.Run("LockFreeMapUint64/dolthub", func(b *testing.B) {
 		m := NewSwissLockFreeMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(uint64(i), uint64(i))
+			_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, size]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = m.Exists(uint64(i % size))
+			_ = m.Exists(uint64(i % size)) //nolint:gosec // G115: i from benchmark loop, always >= 0
 		}
 	})
 	b.Run("LockFreeMapUint64/native", func(b *testing.B) {
 		m := NewNativeLockFreeMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(uint64(i), uint64(i))
+			_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, size]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = m.Exists(uint64(i % size))
+			_ = m.Exists(uint64(i % size)) //nolint:gosec // G115: i from benchmark loop, always >= 0
 		}
 	})
 	// SplitLockFreeMapUint64: uint64 key, uint64 value
 	b.Run("SplitLockFreeMapUint64/dolthub", func(b *testing.B) {
 		m := NewSplitSwissLockFreeMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(uint64(i), uint64(i))
+			_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, size]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = m.Exists(uint64(i % size))
+			_ = m.Exists(uint64(i % size)) //nolint:gosec // G115: i from benchmark loop, always >= 0
 		}
 	})
 	b.Run("SplitLockFreeMapUint64/native", func(b *testing.B) {
 		m := NewNativeSplitLockFreeMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(uint64(i), uint64(i))
+			_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, size]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = m.Exists(uint64(i % size))
+			_ = m.Exists(uint64(i % size)) //nolint:gosec // G115: i from benchmark loop, always >= 0
 		}
 	})
 }
 
 // BenchmarkDelete measures Delete performance for all map types that support it.
-// Note: LockFree map types do not have Delete method.
+// LockFree map types do not have Delete method.
 // Organized by map type, then by implementation (dolthub, native).
 // Run with: go test -bench=BenchmarkDelete -benchmem -benchtime=100000x
+//
+//nolint:gocognit,gocyclo // benchmark structure with many map type variants
 func BenchmarkDelete(b *testing.B) {
 	const size = 100000
 	hashes := getTestHashes(size)
@@ -661,7 +673,7 @@ func BenchmarkDelete(b *testing.B) {
 	b.Run("SplitMap/dolthub", func(b *testing.B) {
 		m := NewSplitSwissMap(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
+			_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -672,7 +684,7 @@ func BenchmarkDelete(b *testing.B) {
 	b.Run("SplitMap/native", func(b *testing.B) {
 		m := NewNativeSplitMap(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
+			_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -684,7 +696,7 @@ func BenchmarkDelete(b *testing.B) {
 	b.Run("MapUint64/dolthub", func(b *testing.B) {
 		m := NewSwissMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
+			_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -695,7 +707,7 @@ func BenchmarkDelete(b *testing.B) {
 	b.Run("MapUint64/native", func(b *testing.B) {
 		m := NewNativeMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
+			_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -707,7 +719,7 @@ func BenchmarkDelete(b *testing.B) {
 	b.Run("SplitMapUint64/dolthub", func(b *testing.B) {
 		m := NewSplitSwissMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
+			_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -718,7 +730,7 @@ func BenchmarkDelete(b *testing.B) {
 	b.Run("SplitMapUint64/native", func(b *testing.B) {
 		m := NewNativeSplitMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
+			_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 		}
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -736,14 +748,14 @@ func BenchmarkSwissMapUint64Iter(b *testing.B) {
 	b.Run("dolthub", func(b *testing.B) {
 		m := NewSwissMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
+			_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 		}
 
 		b.ReportAllocs()
 		b.ResetTimer()
 
 		for i := 0; i < b.N; i++ {
-			m.Iter(func(hash chainhash.Hash, value uint64) bool {
+			m.Iter(func(_ chainhash.Hash, _ uint64) bool {
 				return false // continue
 			})
 		}
@@ -752,22 +764,23 @@ func BenchmarkSwissMapUint64Iter(b *testing.B) {
 	b.Run("native", func(b *testing.B) {
 		m := NewNativeMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i))
+			_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
 		}
 
 		b.ReportAllocs()
 		b.ResetTimer()
 
 		for i := 0; i < b.N; i++ {
-			m.Iter(func(hash chainhash.Hash, value uint64) bool {
+			m.Iter(func(_ chainhash.Hash, _ uint64) bool {
 				return false // continue
 			})
 		}
 	})
-
 }
 
 // BenchmarkSwissMapUint64Delete measures Delete performance for SwissMapUint64.
+//
+//nolint:gocognit // benchmark with dolthub/native variants
 func BenchmarkSwissMapUint64Delete(b *testing.B) {
 	const size = 10000
 	hashes := getTestHashes(size)
@@ -780,7 +793,7 @@ func BenchmarkSwissMapUint64Delete(b *testing.B) {
 			b.StopTimer()
 			m := NewSwissMapUint64(size)
 			for j := 0; j < size; j++ {
-				_ = m.Put(hashes[j], uint64(j))
+				_ = m.Put(hashes[j], uint64(j)) //nolint:gosec // G115: j in range [0, size]
 			}
 			b.StartTimer()
 
@@ -798,7 +811,7 @@ func BenchmarkSwissMapUint64Delete(b *testing.B) {
 			b.StopTimer()
 			m := NewNativeMapUint64(size)
 			for j := 0; j < size; j++ {
-				_ = m.Put(hashes[j], uint64(j))
+				_ = m.Put(hashes[j], uint64(j)) //nolint:gosec // G115: j in range [0, size]
 			}
 			b.StartTimer()
 
@@ -881,7 +894,6 @@ func BenchmarkNewSplitSwissLockFreeMapUint64(b *testing.B) {
 			}
 		}
 	})
-
 }
 
 // BenchmarkNewSplitSwissMap measures constructing a SplitSwissMap.
@@ -907,7 +919,6 @@ func BenchmarkNewSplitSwissMap(b *testing.B) {
 			}
 		}
 	})
-
 }
 
 // BenchmarkNewSplitSwissMapUint64 measures constructing a SplitSwissMapUint64.
@@ -933,7 +944,6 @@ func BenchmarkNewSplitSwissMapUint64(b *testing.B) {
 			}
 		}
 	})
-
 }
 
 // BenchmarkNewSwissLockFreeMapUint64 measures constructing a SwissLockFreeMapUint64.
@@ -959,7 +969,6 @@ func BenchmarkNewSwissLockFreeMapUint64(b *testing.B) {
 			}
 		}
 	})
-
 }
 
 // BenchmarkNewSwissMap measures constructing a SwissMap.
@@ -985,7 +994,6 @@ func BenchmarkNewSwissMap(b *testing.B) {
 			}
 		}
 	})
-
 }
 
 // BenchmarkNewSwissMapUint64 measures constructing a SwissMapUint64.
@@ -1011,5 +1019,4 @@ func BenchmarkNewSwissMapUint64(b *testing.B) {
 			}
 		}
 	})
-
 }
