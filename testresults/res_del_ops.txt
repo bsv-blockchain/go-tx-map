@@ -1,0 +1,14 @@
+goos: darwin
+goarch: amd64
+pkg: github.com/bsv-blockchain/go-tx-map
+cpu: Intel(R) Core(TM) i9-9880H CPU @ 2.30GHz
+BenchmarkDelete/Map/dolthub-16         	10000000	        86.44 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDelete/Map/native-16          	10000000	        47.72 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDelete/SplitMap/dolthub-16    	10000000	       727.4 ns/op	     302 B/op	       5 allocs/op
+BenchmarkDelete/SplitMap/native-16              	10000000	       690.9 ns/op	     302 B/op	       5 allocs/op
+BenchmarkDelete/MapUint64/dolthub-16            	10000000	       608.6 ns/op	     285 B/op	       4 allocs/op
+BenchmarkDelete/MapUint64/native-16             	10000000	       535.9 ns/op	     285 B/op	       4 allocs/op
+BenchmarkDelete/SplitMapUint64/dolthub-16       	10000000	       726.6 ns/op	     302 B/op	       5 allocs/op
+BenchmarkDelete/SplitMapUint64/native-16        	10000000	       693.5 ns/op	     302 B/op	       5 allocs/op
+PASS
+ok  	github.com/bsv-blockchain/go-tx-map	84.898s
