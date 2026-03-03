@@ -232,6 +232,20 @@ magex bench
 
 <br/>
 
+### Choosing an Implementation
+
+The library offers two backend implementations for each map type:
+
+| Implementation | Use when |
+|----------------|----------|
+| **Native** (default) | Speed matters — general-purpose use, delete-heavy workloads, latency-sensitive code. Use `NewDefaultMap`, `NewDefaultMapUint64`, `NewDefaultSplitMap`, etc., or the explicit `NewNative*` constructors. |
+| **Dolthub** | Memory matters — large maps (100M+ entries), RAM-constrained environments. Use `NewSwissMap`, `NewSwissMapUint64`, `NewSplitSwissMap`, etc. |
+
+- **Native** uses Go's built-in map (Swiss Tables in Go 1.24+). It is typically 5–46% faster for most operations.
+- **Dolthub** uses [dolthub/swiss](https://github.com/dolthub/swiss) and uses ~27–30% less memory at 100M entries.
+
+<br/>
+
 ### Benchmark Results
 
 | Benchmark                                                   | Iterations    |   ns/op |    B/op | allocs/op |

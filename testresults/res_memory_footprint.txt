@@ -1,0 +1,24 @@
+=== RUN   TestMemoryConsumption
+=== RUN   TestMemoryConsumption/Map/dolthub
+=== NAME  TestMemoryConsumption
+    tx_map_benchmarks_test.go:76: Map/dolthub: 3.52 GB (3778584008 bytes, 3603.54 MB)
+=== RUN   TestMemoryConsumption/Map/native
+=== NAME  TestMemoryConsumption
+    tx_map_benchmarks_test.go:76: Map/native: 5.00 GB (5373962720 bytes, 5125.01 MB)
+=== RUN   TestMemoryConsumption/SplitMap/dolthub
+=== NAME  TestMemoryConsumption
+    tx_map_benchmarks_test.go:76: SplitMap/dolthub: 4.37 GB (4693979520 bytes, 4476.53 MB)
+=== RUN   TestMemoryConsumption/SplitMap/native
+=== NAME  TestMemoryConsumption
+    tx_map_benchmarks_test.go:76: SplitMap/native: 6.01 GB (6454257024 bytes, 6155.26 MB)
+=== RUN   TestMemoryConsumption/MapUint64/dolthub
+=== NAME  TestMemoryConsumption
+    tx_map_benchmarks_test.go:76: MapUint64/dolthub: 4.36 GB (4685718056 bytes, 4468.65 MB)
+=== RUN   TestMemoryConsumption/MapUint64/native
+=== NAME  TestMemoryConsumption
+    tx_map_benchmarks_test.go:76: MapUint64/native: 6.00 GB (6447693968 bytes, 6149.00 MB)
+=== RUN   TestMemoryConsumption/SplitMapUint64/dolthub
+=== NAME  TestMemoryConsumption
+    tx_map_benchmarks_test.go:76: SplitMapUint64/dolthub: 4.37 GB (4693979424 bytes, 4476.53 MB)
+PASS
+ok  	github.com/bsv-blockchain/go-tx-map

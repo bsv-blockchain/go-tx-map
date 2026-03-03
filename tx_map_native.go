@@ -1,141 +1,50 @@
-// Package txmap provides a set of concurrent-safe data structures and utilities
-// for managing mappings and collections with high-performance requirements.
-// The package leverages Go's sync package and other advanced concurrency
-// primitives such as lock-free techniques where applicable.
+// Package txmap provides alternative implementations using Go's native map
+// (which uses Swiss Tables in Go 1.24+) for benchmarking purposes.
 //
-// Core Features:
-//
-//  1. **Thread-safe Maps**: Flexible implementations of maps with read-write mutex synchronization
-//     for thread-safety in multi-threaded environments.
-//
-//     - **SyncedMap**: A generic concurrent-safe map with optional size limits.
-//     - **SwissMap**: A simple concurrent-safe map based on the swiss.Map library,
-//     designed to store transaction hashes or other key-value mappings efficiently.
-//     - **SwissMapUint64**: A variation of SwissMap for transaction hashes associated
-//     with `uint64` values.
-//     - **SwissLockFreeMapUint64**: A specialized lock-free map for `uint64` keys and values,
-//     offering better performance for certain scenarios.
-//
-//  2. **Synced Slice**: A thread-safe wrapper around slices, allowing for synchronized
-//     access and updates. Useful for managing shared lists in concurrent code.
-//
-//  3. **Split Bucket Maps**: Advanced sharding technique for reducing contention by splitting
-//     data into multiple buckets (e.g., SplitSwissMap).
-//     - Buckets minimize lock contention by distributing keys across multiple synchronized maps.
-//
-//  4. **Utilities for Map Conversion**: Helper functions to convert various map data
-//     structures into slices, making data extraction and iteration easier.
-//
-// Design Considerations:
-//   - **Locking Mechanisms**: Where necessary, the maps use read-write locks for consistent
-//     reads and writes, while minimizing the lock duration for better performance.
-//   - **Limit Controls**: Maps such as SyncedMap optionally provide control over the maximum
-//     number of items stored, ensuring that memory usage is kept in check.
-//   - **High Concurrency**: Certain implementations, like SwissLockFreeMapUint64, are lock-free
-//     for a subset of their operations, promoting better scalability in concurrent workloads.
-//   - **Preallocation**: Many data structures accept initialization parameters for preallocating
-//     internal storage, reducing runtime overhead from frequent allocations.
-//
-// Usage Scenarios:
-// The package is suitable for tasks requiring efficient handling of:
-// - Large-scale transaction mappings (e.g., blockchain transaction hash maps).
-// - Concurrent key-value access and modifications under high contention.
-// - Specialized locking or predictive space management for performance-critical applications.
-//
-// Examples:
-// - Managing transaction hash lookups and metadata in high-frequency trading systems.
-// - Concurrent-safe configuration or cache management in distributed services.
-// - Utility for parallel data aggregation or transformation of shared resources.
-//
-// Dependencies:
-// The package depends on the [`swiss`](https://github.com/dolthub/swiss) library and
-// additionally uses the `chainhash` library (`github.com/bsv-blockchain/go-bt/v2/chainhash`) where applicable.
+// Default factories (NewDefault*) return native implementations, which are
+// recommended for general-purpose use due to their speed. Use dolthub
+// implementations (NewSwiss*, NewSplitSwiss*) when memory is constrained.
 package txmap
 
 import (
-	"errors"
 	"fmt"
 	"math"
 	"sync"
 	"sync/atomic"
 
 	"github.com/bsv-blockchain/go-bt/v2/chainhash"
-	"github.com/dolthub/swiss"
 )
 
-// TxMap is a map that stores transaction hashes and associated uint64 values.
-type TxMap interface {
-	Delete(hash chainhash.Hash) error
-	Exists(hash chainhash.Hash) bool
-	Get(hash chainhash.Hash) (uint64, bool)
-	Keys() []chainhash.Hash
-	Length() int
-	Put(hash chainhash.Hash, value uint64) error
-	PutMulti(hashes []chainhash.Hash, value uint64) error
-	Set(hash chainhash.Hash, value uint64) error
-	SetIfExists(hash chainhash.Hash, value uint64) (bool, error)
-	SetIfNotExists(hash chainhash.Hash, value uint64) (bool, error)
-	Iter(f func(hash chainhash.Hash, value uint64) bool)
-}
+// Map is the default hash-only map type (native).
+type Map = NativeMap
 
-// Uint64 is a map that stores uint64's and associated uint64 value.
-type Uint64 interface {
-	Exists(hash uint64) bool
-	Get(hash uint64) (uint64, bool)
-	Length() int
-	Put(hash, value uint64) error
-}
-
-// TxHashMap is a map that stores transaction hashes without any associated value.
-type TxHashMap interface {
-	Delete(hash chainhash.Hash) error
-	Exists(hash chainhash.Hash) bool
-	Get(hash chainhash.Hash) (uint64, bool)
-	Keys() []chainhash.Hash
-	Length() int
-	Put(hash chainhash.Hash) error
-	PutMulti(hashes []chainhash.Hash) error
-	Iter(f func(hash chainhash.Hash, value uint64) bool)
-}
-
-// SwissMap is a simple concurrent-safe map that uses the swiss package
-type SwissMap struct {
+// NativeMap is a simple concurrent-safe map that uses Go's native map
+type NativeMap struct {
 	mu     sync.RWMutex
-	m      *swiss.Map[chainhash.Hash, struct{}]
+	m      map[chainhash.Hash]struct{}
 	length int
 }
 
-var (
-	// ErrHashAlreadyExists is when hash already exists
-	ErrHashAlreadyExists = errors.New("hash already exists in map")
-
-	// ErrHashDoesNotExist is when hash doesn't exist
-	ErrHashDoesNotExist = errors.New("hash does not exist in map")
-
-	// ErrBucketDoesNotExist is when a bucket doesn't exist
-	ErrBucketDoesNotExist = errors.New("bucket does not exist")
-)
-
-const (
-	// errWrapFormat is the format string for wrapping errors with additional context
-	errWrapFormat = "%w: %v"
-)
-
-// NewSwissMap creates a new SwissMap with the specified initial length.
+// NewNativeMap creates a new NativeMap with the specified initial length.
 // The length is used to preallocate the map size for better performance.
-// It is not a hard limit, but a hint to the underlying swiss map.
+// It is not a hard limit, but a hint to the underlying map.
 //
 // Params:
 //   - length: The initial length of the map, used for preallocation.
 //
 // Returns:
-//   - *SwissMap: A pointer to the newly created SwissMap instance.
+//   - *NativeMap: A pointer to the newly created NativeMap instance.
 //
 // Considerations: The length is not enforced, and the map can grow beyond this size.
-func NewSwissMap(length uint32) *SwissMap {
-	return &SwissMap{
-		m: swiss.NewMap[chainhash.Hash, struct{}](length),
+func NewNativeMap(length uint32) *NativeMap {
+	return &NativeMap{
+		m: make(map[chainhash.Hash]struct{}, length),
 	}
+}
+
+// NewDefaultMap returns a native map.
+func NewDefaultMap(length uint32) *NativeMap {
+	return NewNativeMap(length)
 }
 
 // Exists checks if the given hash exists in the map.
@@ -146,11 +55,11 @@ func NewSwissMap(length uint32) *SwissMap {
 //
 // Returns:
 //   - bool: True if the hash exists in the map, false otherwise.
-func (s *SwissMap) Exists(hash chainhash.Hash) bool {
+func (s *NativeMap) Exists(hash chainhash.Hash) bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	_, ok := s.m.Get(hash)
+	_, ok := s.m[hash]
 
 	return ok
 }
@@ -164,11 +73,11 @@ func (s *SwissMap) Exists(hash chainhash.Hash) bool {
 // Returns:
 //   - uint64: Always returns 0, as this map does not store values.
 //   - bool: True if the hash was found in the map, false otherwise.
-func (s *SwissMap) Get(hash chainhash.Hash) (uint64, bool) {
+func (s *NativeMap) Get(hash chainhash.Hash) (uint64, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	_, ok := s.m.Get(hash)
+	_, ok := s.m[hash]
 
 	return 0, ok
 }
@@ -180,13 +89,13 @@ func (s *SwissMap) Get(hash chainhash.Hash) (uint64, bool) {
 //
 // Returns:
 //   - error: always returns nil, as this map does not have any constraints on adding hashes.
-func (s *SwissMap) Put(hash chainhash.Hash) error {
+func (s *NativeMap) Put(hash chainhash.Hash) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	s.length++
 
-	s.m.Put(hash, struct{}{})
+	s.m[hash] = struct{}{}
 
 	return nil
 }
@@ -198,12 +107,12 @@ func (s *SwissMap) Put(hash chainhash.Hash) error {
 //
 // Returns:
 //   - error: always returns nil, as this map does not have any constraints on adding hashes.
-func (s *SwissMap) PutMulti(hashes []chainhash.Hash) error {
+func (s *NativeMap) PutMulti(hashes []chainhash.Hash) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	for _, hash := range hashes {
-		s.m.Put(hash, struct{}{})
+		s.m[hash] = struct{}{}
 
 		s.length++
 	}
@@ -218,13 +127,13 @@ func (s *SwissMap) PutMulti(hashes []chainhash.Hash) error {
 //
 // Returns:
 //   - error: always returns nil, as this map does not have any constraints on deleting hashes.
-func (s *SwissMap) Delete(hash chainhash.Hash) error {
+func (s *NativeMap) Delete(hash chainhash.Hash) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	s.length--
 
-	s.m.Delete(hash)
+	delete(s.m, hash)
 
 	return nil
 }
@@ -233,7 +142,7 @@ func (s *SwissMap) Delete(hash chainhash.Hash) error {
 //
 // Returns:
 //   - int: The number of hashes currently stored in the map.
-func (s *SwissMap) Length() int {
+func (s *NativeMap) Length() int {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -246,22 +155,21 @@ func (s *SwissMap) Length() int {
 //
 // Returns:
 //   - []chainhash.Hash: A slice containing all the hashes in the map.
-func (s *SwissMap) Keys() []chainhash.Hash {
+func (s *NativeMap) Keys() []chainhash.Hash {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	keys := make([]chainhash.Hash, 0, s.length)
 
-	s.m.Iter(func(k chainhash.Hash, _ struct{}) (stop bool) {
+	for k := range s.m {
 		keys = append(keys, k)
-		return false
-	})
+	}
 
 	return keys
 }
 
 // Map returns the TxHashMap
-func (s *SwissMap) Map() TxHashMap {
+func (s *NativeMap) Map() TxHashMap {
 	return s
 }
 
@@ -270,46 +178,58 @@ func (s *SwissMap) Map() TxHashMap {
 //
 // Params:
 //   - f: A function that takes a hash and its associated value (always 0 in this map).
-func (s *SwissMap) Iter(f func(hash chainhash.Hash, value uint64) bool) {
+func (s *NativeMap) Iter(f func(hash chainhash.Hash, value uint64) bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	s.m.Iter(func(k chainhash.Hash, _ struct{}) (stop bool) {
-		return f(k, 0)
-	})
+	for k := range s.m {
+		if f(k, 0) {
+			return
+		}
+	}
 }
 
-// check that SwissMapUint64 implements TxMap
-var _ TxMap = (*SwissMapUint64)(nil)
+// check that NativeMapUint64 implements TxMap
+var _ TxMap = (*NativeMapUint64)(nil)
 
-// SwissMapUint64 is a concurrent-safe map that uses the swiss package to store
+// MapUint64 is the default hash-to-uint64 map type using native implementation.
+// Use NewDefaultMapUint64 to create instances.
+type MapUint64 = NativeMapUint64
+
+// NativeMapUint64 is a concurrent-safe map that uses Go's native map to store
 // transaction hashes as keys and uint64 values.
-type SwissMapUint64 struct {
+type NativeMapUint64 struct {
 	mu     sync.RWMutex
-	m      *swiss.Map[chainhash.Hash, uint64]
+	m      map[chainhash.Hash]uint64
 	length int
 }
 
-// NewSwissMapUint64 creates a new SwissMapUint64 with the specified initial length.
+// NewNativeMapUint64 creates a new NativeMapUint64 with the specified initial length.
 // The length is used to preallocate the map size for better performance.
-// It is not a hard limit, but a hint to the underlying swiss map.
+// It is not a hard limit, but a hint to the underlying map.
 //
 // Params:
 //   - length: The initial length of the map, used for preallocation.
 //
 // Returns:
-//   - *SwissMapUint64: A pointer to the newly created SwissMapUint64 instance.
-func NewSwissMapUint64(length uint32) *SwissMapUint64 {
-	return &SwissMapUint64{
-		m: swiss.NewMap[chainhash.Hash, uint64](length),
+//   - *NativeMapUint64: A pointer to the newly created NativeMapUint64 instance.
+func NewNativeMapUint64(length uint32) *NativeMapUint64 {
+	return &NativeMapUint64{
+		m: make(map[chainhash.Hash]uint64, length),
 	}
 }
 
-// Map returns the underlying swiss map used by SwissMapUint64.
+// NewDefaultMapUint64 returns a native map implementation. Use for general-purpose
+// hash-to-uint64 maps when speed matters. Use NewSwissMapUint64 when memory is constrained.
+func NewDefaultMapUint64(length uint32) *NativeMapUint64 {
+	return NewNativeMapUint64(length)
+}
+
+// Map returns the underlying native map used by NativeMapUint64.
 //
 // Returns:
-//   - *swiss.Map[chainhash.Hash, uint64]: A pointer to the underlying swiss map.
-func (s *SwissMapUint64) Map() *swiss.Map[chainhash.Hash, uint64] {
+//   - map[chainhash.Hash]uint64: The underlying native map.
+func (s *NativeMapUint64) Map() map[chainhash.Hash]uint64 {
 	return s.m
 }
 
@@ -321,11 +241,11 @@ func (s *SwissMapUint64) Map() *swiss.Map[chainhash.Hash, uint64] {
 //
 // Returns:
 //   - bool: True if the hash exists in the map, false otherwise.
-func (s *SwissMapUint64) Exists(hash chainhash.Hash) bool {
+func (s *NativeMapUint64) Exists(hash chainhash.Hash) bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	_, ok := s.m.Get(hash)
+	_, ok := s.m[hash]
 
 	return ok
 }
@@ -340,16 +260,16 @@ func (s *SwissMapUint64) Exists(hash chainhash.Hash) bool {
 //
 // Returns:
 //   - error: An error if the hash already exists in the map, nil otherwise.
-func (s *SwissMapUint64) Put(hash chainhash.Hash, n uint64) error {
+func (s *NativeMapUint64) Put(hash chainhash.Hash, n uint64) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	exists := s.m.Has(hash)
+	_, exists := s.m[hash]
 	if exists {
 		return fmt.Errorf(errWrapFormat, ErrHashAlreadyExists, hash)
 	}
 
-	s.m.Put(hash, n)
+	s.m[hash] = n
 
 	s.length++
 
@@ -366,17 +286,17 @@ func (s *SwissMapUint64) Put(hash chainhash.Hash, n uint64) error {
 //
 // Returns:
 //   - error: An error if any of the hashes already exist in the map, nil otherwise.
-func (s *SwissMapUint64) PutMulti(hashes []chainhash.Hash, n uint64) error {
+func (s *NativeMapUint64) PutMulti(hashes []chainhash.Hash, n uint64) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	for _, hash := range hashes {
-		exists := s.m.Has(hash)
+		_, exists := s.m[hash]
 		if exists {
 			return fmt.Errorf(errWrapFormat, ErrHashAlreadyExists, hash)
 		}
 
-		s.m.Put(hash, n)
+		s.m[hash] = n
 
 		s.length++
 	}
@@ -393,15 +313,16 @@ func (s *SwissMapUint64) PutMulti(hashes []chainhash.Hash, n uint64) error {
 //
 // Returns:
 //   - error: An error if the hash does not exist in the map, nil otherwise.
-func (s *SwissMapUint64) Set(hash chainhash.Hash, value uint64) error {
+func (s *NativeMapUint64) Set(hash chainhash.Hash, value uint64) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if !s.m.Has(hash) {
+	_, exists := s.m[hash]
+	if !exists {
 		return fmt.Errorf(errWrapFormat, ErrHashDoesNotExist, hash)
 	}
 
-	s.m.Put(hash, value)
+	s.m[hash] = value
 
 	return nil
 }
@@ -417,15 +338,16 @@ func (s *SwissMapUint64) Set(hash chainhash.Hash, value uint64) error {
 // Returns:
 //   - bool: True if the hash was found and updated, false otherwise.
 //   - error: An error if there was an issue updating the hash, nil otherwise.
-func (s *SwissMapUint64) SetIfExists(hash chainhash.Hash, value uint64) (bool, error) {
+func (s *NativeMapUint64) SetIfExists(hash chainhash.Hash, value uint64) (bool, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if !s.m.Has(hash) {
+	_, exists := s.m[hash]
+	if !exists {
 		return false, nil
 	}
 
-	s.m.Put(hash, value)
+	s.m[hash] = value
 
 	return true, nil
 }
@@ -441,15 +363,16 @@ func (s *SwissMapUint64) SetIfExists(hash chainhash.Hash, value uint64) (bool, e
 // Returns:
 //   - bool: True if the hash was added, false if it already existed.
 //   - error: An error if there was an issue adding the hash, nil otherwise.
-func (s *SwissMapUint64) SetIfNotExists(hash chainhash.Hash, value uint64) (bool, error) {
+func (s *NativeMapUint64) SetIfNotExists(hash chainhash.Hash, value uint64) (bool, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if s.m.Has(hash) {
+	_, exists := s.m[hash]
+	if exists {
 		return false, nil
 	}
 
-	s.m.Put(hash, value)
+	s.m[hash] = value
 
 	s.length++
 
@@ -466,11 +389,11 @@ func (s *SwissMapUint64) SetIfNotExists(hash chainhash.Hash, value uint64) (bool
 // Returns:
 //   - uint64: The value associated with the hash, or 0 if the hash does not exist.
 //   - bool: True if the hash was found in the map, false otherwise.
-func (s *SwissMapUint64) Get(hash chainhash.Hash) (uint64, bool) {
+func (s *NativeMapUint64) Get(hash chainhash.Hash) (uint64, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	n, ok := s.m.Get(hash)
+	n, ok := s.m[hash]
 	if !ok {
 		return 0, false
 	}
@@ -483,7 +406,7 @@ func (s *SwissMapUint64) Get(hash chainhash.Hash) (uint64, bool) {
 //
 // Returns:
 //   - int: The number of hashes currently stored in the map.
-func (s *SwissMapUint64) Length() int {
+func (s *NativeMapUint64) Length() int {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -496,16 +419,15 @@ func (s *SwissMapUint64) Length() int {
 //
 // Returns:
 //   - []chainhash.Hash: A slice containing all the hashes in the map.
-func (s *SwissMapUint64) Keys() []chainhash.Hash {
+func (s *NativeMapUint64) Keys() []chainhash.Hash {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	keys := make([]chainhash.Hash, 0, s.length)
 
-	s.m.Iter(func(k chainhash.Hash, _ uint64) (stop bool) {
+	for k := range s.m {
 		keys = append(keys, k)
-		return false
-	})
+	}
 
 	return keys
 }
@@ -515,13 +437,15 @@ func (s *SwissMapUint64) Keys() []chainhash.Hash {
 //
 // Params:
 //   - f: A function that takes a hash and its associated uint64 value.
-func (s *SwissMapUint64) Iter(f func(hash chainhash.Hash, value uint64) bool) {
+func (s *NativeMapUint64) Iter(f func(hash chainhash.Hash, value uint64) bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	s.m.Iter(func(k chainhash.Hash, v uint64) (stop bool) {
-		return f(k, v)
-	})
+	for k, v := range s.m {
+		if f(k, v) {
+			return
+		}
+	}
 }
 
 // Delete removes a hash from the map. It decrements the length of the map.
@@ -533,59 +457,74 @@ func (s *SwissMapUint64) Iter(f func(hash chainhash.Hash, value uint64) bool) {
 //
 // Returns:
 //   - error: An error if the hash does not exist in the map, nil otherwise.
-func (s *SwissMapUint64) Delete(hash chainhash.Hash) error {
+func (s *NativeMapUint64) Delete(hash chainhash.Hash) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if !s.m.Has(hash) {
+	_, exists := s.m[hash]
+	if !exists {
 		return fmt.Errorf("%w: %s", ErrHashDoesNotExist, hash)
 	}
 
-	s.m.Delete(hash)
+	delete(s.m, hash)
 
 	s.length--
 
 	return nil
 }
 
-// SwissLockFreeMapUint64 is a lock-free map for uint64 keys and values
-type SwissLockFreeMapUint64 struct {
-	m      *swiss.Map[uint64, uint64]
+// LockFreeMapUint64 is the default lock-free map type using native implementation.
+// Use NewDefaultLockFreeMapUint64 to create instances.
+type LockFreeMapUint64 = NativeLockFreeMapUint64
+
+// NativeLockFreeMapUint64 is a lock-free map for uint64 keys and values
+type NativeLockFreeMapUint64 struct {
+	m      map[uint64]uint64
 	length atomic.Uint32
 }
 
-// NewSwissLockFreeMapUint64 creates a new SwissLockFreeMapUint64 with the specified initial length.
+// NewNativeLockFreeMapUint64 creates a new NativeLockFreeMapUint64 with the specified initial length.
 // The length is used to preallocate the map size for better performance.
-// It is not a hard limit, but a hint to the underlying swiss map.
+// It is not a hard limit, but a hint to the underlying map.
 //
 // Params:
 //   - length: The initial length of the map, used for preallocation.
 //
 // Returns:
-//   - *SwissLockFreeMapUint64: A pointer to the newly created SwissLockFreeMapUint64 instance.
-func NewSwissLockFreeMapUint64(length int) *SwissLockFreeMapUint64 {
-	return &SwissLockFreeMapUint64{
-		m:      swiss.NewMap[uint64, uint64](uint32(length)), //nolint:gosec // integer overflow conversion int -> uint32
+//   - *NativeLockFreeMapUint64: A pointer to the newly created NativeLockFreeMapUint64 instance.
+func NewNativeLockFreeMapUint64(length int) *NativeLockFreeMapUint64 {
+	return &NativeLockFreeMapUint64{
+		m:      make(map[uint64]uint64, length),
 		length: atomic.Uint32{},
 	}
 }
 
-// Map returns the underlying swiss map used by SwissLockFreeMapUint64.
+// NewDefaultLockFreeMapUint64 returns a native lock-free map. Use for general-purpose
+// uint64-to-uint64 maps when speed matters. Use NewSwissLockFreeMapUint64 when memory is constrained.
+func NewDefaultLockFreeMapUint64(length int) *NativeLockFreeMapUint64 {
+	return NewNativeLockFreeMapUint64(length)
+}
+
+// Map returns the underlying native map used by NativeLockFreeMapUint64.
 // It provides access to the map for operations that do not require locking.
 //
 // Returns:
-//   - *swiss.Map[uint64, uint64]: A pointer to the underlying swiss map.
+//   - map[uint64]uint64: The underlying native map.
 //
 // Considerations: This method does not lock the map, so it is not suitable for concurrent access.
-func (s *SwissLockFreeMapUint64) Map() *swiss.Map[uint64, uint64] {
+func (s *NativeLockFreeMapUint64) Map() map[uint64]uint64 {
 	return s.m
 }
 
 // Iter iterates over all key-value pairs in the map. Stops if f returns true.
-// Enables unified iteration API with NativeLockFreeMapUint64 for consumers that
-// support both dolthub and native backends.
-func (s *SwissLockFreeMapUint64) Iter(f func(k, v uint64) (stop bool)) {
-	s.m.Iter(f)
+// Compatible with the pattern used by SwissLockFreeMapUint64.Map().Iter for consumers
+// that need a unified iteration API across dolthub and native backends.
+func (s *NativeLockFreeMapUint64) Iter(f func(k, v uint64) (stop bool)) {
+	for k, v := range s.m {
+		if f(k, v) {
+			return
+		}
+	}
 }
 
 // Exists checks if the given hash exists in the map.
@@ -597,8 +536,8 @@ func (s *SwissLockFreeMapUint64) Iter(f func(k, v uint64) (stop bool)) {
 //   - bool: True if the hash exists in the map, false otherwise.
 //
 // Considerations: This method does not lock the map, so it is not suitable for concurrent access.
-func (s *SwissLockFreeMapUint64) Exists(hash uint64) bool {
-	_, ok := s.m.Get(hash)
+func (s *NativeLockFreeMapUint64) Exists(hash uint64) bool {
+	_, ok := s.m[hash]
 	return ok
 }
 
@@ -614,13 +553,13 @@ func (s *SwissLockFreeMapUint64) Exists(hash uint64) bool {
 //   - error: An error if the hash already exists in the map, nil otherwise.
 //
 // Considerations: This method does not lock the map, so it is not suitable for concurrent access.
-func (s *SwissLockFreeMapUint64) Put(hash, n uint64) error {
-	exists := s.m.Has(hash)
+func (s *NativeLockFreeMapUint64) Put(hash, n uint64) error {
+	_, exists := s.m[hash]
 	if exists {
 		return ErrHashAlreadyExists
 	}
 
-	s.m.Put(hash, n)
+	s.m[hash] = n
 	s.length.Add(1)
 
 	return nil
@@ -636,8 +575,8 @@ func (s *SwissLockFreeMapUint64) Put(hash, n uint64) error {
 //   - bool: True if the hash was found in the map, false otherwise.
 //
 // Considerations: This method does not lock the map, so it is not suitable for concurrent access.
-func (s *SwissLockFreeMapUint64) Get(hash uint64) (uint64, bool) {
-	n, ok := s.m.Get(hash)
+func (s *NativeLockFreeMapUint64) Get(hash uint64) (uint64, bool) {
+	n, ok := s.m[hash]
 	if !ok {
 		return 0, false
 	}
@@ -651,22 +590,25 @@ func (s *SwissLockFreeMapUint64) Get(hash uint64) (uint64, bool) {
 //   - int: The number of hashes currently stored in the map.
 //
 // Considerations: This method uses atomic operations to retrieve the length, making it safe for concurrent access.
-func (s *SwissLockFreeMapUint64) Length() int {
+func (s *NativeLockFreeMapUint64) Length() int {
 	return int(s.length.Load())
 }
 
-// check that SplitSwissMap implements TxMap
-var _ TxMap = (*SplitSwissMap)(nil)
+// check that NativeSplitMap implements TxMap
+var _ TxMap = (*NativeSplitMap)(nil)
 
-// SplitSwissMap is a map that splits the data into multiple buckets to reduce contention.
-// It uses SwissMapUint64 for each bucket to store the hashes and their associated uint64 values.
-// Since SwissMapUint64 is concurrent-safe, SplitSwissMap can handle concurrent access without additional locks.
-type SplitSwissMap struct {
-	m           map[uint16]*SwissMapUint64
+// SplitMap is the default split map type using native implementation.
+// Use NewDefaultSplitMap to create instances.
+type SplitMap = NativeSplitMap
+
+// NativeSplitMap splits the data into multiple buckets to reduce contention.
+// It uses NativeMapUint64 for each bucket. NativeMapUint64 is concurrent-safe.
+type NativeSplitMap struct {
+	m           map[uint16]*NativeMapUint64
 	nrOfBuckets uint16
 }
 
-// NewSplitSwissMap creates a new SplitSwissMap with the specified initial length.
+// NewNativeSplitMap creates a new NativeSplitMap with the specified initial length.
 // The length is used to preallocate the size of each bucket.
 // It divides the length by the number of buckets to determine the size of each bucket.
 //
@@ -674,29 +616,35 @@ type SplitSwissMap struct {
 //   - length: The initial length of the map, used for preallocation.
 //
 // Returns:
-//   - *SplitSwissMap: A pointer to the newly created SplitSwissMap instance.
+//   - *NativeSplitMap: A pointer to the newly created NativeSplitMap instance.
 //
 // Considerations: The number of buckets is fixed at 1024, and the length is divided by this number to determine the size of each bucket.
-func NewSplitSwissMap(length int, buckets ...uint16) *SplitSwissMap {
+func NewNativeSplitMap(length int, buckets ...uint16) *NativeSplitMap {
 	useBuckets := uint16(1024)
 	if len(buckets) > 0 {
 		useBuckets = buckets[0]
 	}
 
-	m := &SplitSwissMap{
-		m:           make(map[uint16]*SwissMapUint64, useBuckets),
+	m := &NativeSplitMap{
+		m:           make(map[uint16]*NativeMapUint64, useBuckets),
 		nrOfBuckets: useBuckets,
 	}
 
 	for i := uint16(0); i <= m.nrOfBuckets; i++ {
-		m.m[i] = NewSwissMapUint64(uint32(math.Ceil(float64(length) / float64(m.nrOfBuckets))))
+		m.m[i] = NewNativeMapUint64(uint32(math.Ceil(float64(length) / float64(m.nrOfBuckets))))
 	}
 
 	return m
 }
 
-// Buckets returns the number of buckets in the SplitSwissMap.
-func (g *SplitSwissMap) Buckets() uint16 {
+// NewDefaultSplitMap returns a native split map implementation. Use for general-purpose
+// hash-to-uint64 split maps when speed matters. Use NewSplitSwissMap when memory is constrained.
+func NewDefaultSplitMap(length int, buckets ...uint16) *NativeSplitMap {
+	return NewNativeSplitMap(length, buckets...)
+}
+
+// Buckets returns the number of buckets in the NativeSplitMap.
+func (g *NativeSplitMap) Buckets() uint16 {
 	return g.nrOfBuckets
 }
 
@@ -708,7 +656,7 @@ func (g *SplitSwissMap) Buckets() uint16 {
 //
 // Returns:
 //   - bool: True if the hash exists in the map, false otherwise.
-func (g *SplitSwissMap) Exists(hash chainhash.Hash) bool {
+func (g *NativeSplitMap) Exists(hash chainhash.Hash) bool {
 	return g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].Exists(hash)
 }
 
@@ -721,7 +669,7 @@ func (g *SplitSwissMap) Exists(hash chainhash.Hash) bool {
 // Returns:
 //   - uint64: The value associated with the hash, or 0 if the hash does not exist.
 //   - bool: True if the hash was found in the map, false otherwise.
-func (g *SplitSwissMap) Get(hash chainhash.Hash) (uint64, bool) {
+func (g *NativeSplitMap) Get(hash chainhash.Hash) (uint64, bool) {
 	return g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].Get(hash)
 }
 
@@ -735,7 +683,7 @@ func (g *SplitSwissMap) Get(hash chainhash.Hash) (uint64, bool) {
 //
 // Returns:
 //   - error: An error if the hash already exists in the map, nil otherwise.
-func (g *SplitSwissMap) Put(hash chainhash.Hash, n uint64) error {
+func (g *NativeSplitMap) Put(hash chainhash.Hash, n uint64) error {
 	return g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].Put(hash, n)
 }
 
@@ -750,7 +698,7 @@ func (g *SplitSwissMap) Put(hash chainhash.Hash, n uint64) error {
 //
 // Returns:
 //   - error: An error if any of the hashes already exist in the map, nil otherwise.
-func (g *SplitSwissMap) PutMulti(hashes []chainhash.Hash, n uint64) (err error) {
+func (g *NativeSplitMap) PutMulti(hashes []chainhash.Hash, n uint64) (err error) {
 	for _, hash := range hashes {
 		if err = g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].Put(hash, n); err != nil {
 			return fmt.Errorf("failed to put multi in bucket %d: %w", Bytes2Uint16Buckets(hash, g.nrOfBuckets), err)
@@ -770,7 +718,7 @@ func (g *SplitSwissMap) PutMulti(hashes []chainhash.Hash, n uint64) (err error) 
 //
 // Returns:
 //   - error: An error if the bucket does not exist or if there is an issue adding the hashes, nil otherwise.
-func (g *SplitSwissMap) PutMultiBucket(bucket uint16, hashes []chainhash.Hash, n uint64) error {
+func (g *NativeSplitMap) PutMultiBucket(bucket uint16, hashes []chainhash.Hash, n uint64) error {
 	if bucket > g.nrOfBuckets {
 		return fmt.Errorf("%w: %d, max bucket is %d", ErrBucketDoesNotExist, bucket, g.nrOfBuckets)
 	}
@@ -786,7 +734,7 @@ func (g *SplitSwissMap) PutMultiBucket(bucket uint16, hashes []chainhash.Hash, n
 //
 // Returns:
 //   - error: An error if the hash does not exist in the map, nil otherwise.
-func (g *SplitSwissMap) Set(hash chainhash.Hash, value uint64) error {
+func (g *NativeSplitMap) Set(hash chainhash.Hash, value uint64) error {
 	return g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].Set(hash, value)
 }
 
@@ -801,7 +749,7 @@ func (g *SplitSwissMap) Set(hash chainhash.Hash, value uint64) error {
 // Returns:
 //   - bool: True if the hash was found and updated, false otherwise.
 //   - error: An error if there was an issue updating the hash, nil otherwise.
-func (g *SplitSwissMap) SetIfExists(hash chainhash.Hash, value uint64) (bool, error) {
+func (g *NativeSplitMap) SetIfExists(hash chainhash.Hash, value uint64) (bool, error) {
 	return g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].SetIfExists(hash, value)
 }
 
@@ -816,7 +764,7 @@ func (g *SplitSwissMap) SetIfExists(hash chainhash.Hash, value uint64) (bool, er
 // Returns:
 //   - bool: True if the hash was added, false if it already existed.
 //   - error: An error if there was an issue adding the hash, nil otherwise.
-func (g *SplitSwissMap) SetIfNotExists(hash chainhash.Hash, value uint64) (bool, error) {
+func (g *NativeSplitMap) SetIfNotExists(hash chainhash.Hash, value uint64) (bool, error) {
 	return g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].SetIfNotExists(hash, value)
 }
 
@@ -826,7 +774,7 @@ func (g *SplitSwissMap) SetIfNotExists(hash chainhash.Hash, value uint64) (bool,
 //
 // Returns:
 //   - []chainhash.Hash: A slice containing all the hashes in the map.
-func (g *SplitSwissMap) Keys() []chainhash.Hash {
+func (g *NativeSplitMap) Keys() []chainhash.Hash {
 	keys := make([]chainhash.Hash, 0, g.Length())
 
 	for i := uint16(0); i <= g.nrOfBuckets; i++ {
@@ -841,7 +789,7 @@ func (g *SplitSwissMap) Keys() []chainhash.Hash {
 //
 // Returns:
 //   - int: The number of hashes currently stored in the map.
-func (g *SplitSwissMap) Length() int {
+func (g *NativeSplitMap) Length() int {
 	length := 0
 
 	for i := uint16(0); i <= g.nrOfBuckets; i++ {
@@ -859,7 +807,7 @@ func (g *SplitSwissMap) Length() int {
 //
 // Returns:
 //   - error: An error if the hash does not exist in the map or if the bucket does not exist, nil otherwise.
-func (g *SplitSwissMap) Delete(hash chainhash.Hash) error {
+func (g *NativeSplitMap) Delete(hash chainhash.Hash) error {
 	bucket := Bytes2Uint16Buckets(hash, g.nrOfBuckets)
 
 	if _, ok := g.m[bucket]; !ok {
@@ -873,12 +821,12 @@ func (g *SplitSwissMap) Delete(hash chainhash.Hash) error {
 	return g.m[bucket].Delete(hash)
 }
 
-// Map returns the underlying map of all buckets used by SplitSwissMap.
+// Map returns the underlying map of all buckets used by NativeSplitMap.
 //
 // Returns:
-//   - TxMap: A map where the keys are bucket indices and the values are pointers to SwissMapUint64 instances.
-func (g *SplitSwissMap) Map() *SwissMapUint64 {
-	m := NewSwissMapUint64(uint32(g.Length())) //nolint:gosec // integer overflow conversion int -> uint32
+//   - TxMap: A map where the keys are bucket indices and the values are pointers to NativeMapUint64 instances.
+func (g *NativeSplitMap) Map() *NativeMapUint64 {
+	m := NewNativeMapUint64(uint32(g.Length())) //nolint:gosec // integer overflow conversion int -> uint32
 	for i := uint16(0); i <= g.nrOfBuckets; i++ {
 		keys := g.m[i].Keys()
 		for _, key := range keys {
@@ -895,24 +843,27 @@ func (g *SplitSwissMap) Map() *SwissMapUint64 {
 //
 // Params:
 //   - f: A function that takes a hash and its associated uint64 value.
-func (g *SplitSwissMap) Iter(f func(hash chainhash.Hash, value uint64) bool) {
+func (g *NativeSplitMap) Iter(f func(hash chainhash.Hash, value uint64) bool) {
 	for i := uint16(0); i <= g.nrOfBuckets; i++ {
 		g.m[i].Iter(f)
 	}
 }
 
-// check that SplitSwissMapUint64 implements TxMap
-var _ TxMap = (*SplitSwissMapUint64)(nil)
+// check that NativeSplitMapUint64 implements TxMap
+var _ TxMap = (*NativeSplitMapUint64)(nil)
 
-// SplitSwissMapUint64 is a map that splits the data into multiple buckets to reduce contention.
-// It uses SwissMapUint64 for each bucket to store the hashes and their associated uint64 values.
-// The number of buckets is fixed at 1024, and the length is divided by this number to determine the size of each bucket.
-type SplitSwissMapUint64 struct {
-	m           map[uint16]*SwissMapUint64
+// SplitMapUint64 is the default split map uint64 type using native implementation.
+// Use NewDefaultSplitMapUint64 to create instances.
+type SplitMapUint64 = NativeSplitMapUint64
+
+// NativeSplitMapUint64 splits the data into multiple buckets to reduce contention.
+// It uses NativeMapUint64 for each bucket. Buckets is fixed at 1024.
+type NativeSplitMapUint64 struct {
+	m           map[uint16]*NativeMapUint64
 	nrOfBuckets uint16
 }
 
-// NewSplitSwissMapUint64 creates a new SplitSwissMapUint64 with the specified initial length.
+// NewNativeSplitMapUint64 creates a new NativeSplitMapUint64 with the specified initial length.
 // The length is used to preallocate the size of each bucket.
 // It divides the length by the number of buckets to determine the size of each bucket.
 //
@@ -920,23 +871,29 @@ type SplitSwissMapUint64 struct {
 //   - length: The initial length of the map, used for preallocation.
 //
 // Returns:
-//   - *SplitSwissMapUint64: A pointer to the newly created SplitSwissMapUint64 instance.
-func NewSplitSwissMapUint64(length uint32, buckets ...uint16) *SplitSwissMapUint64 {
+//   - *NativeSplitMapUint64: A pointer to the newly created NativeSplitMapUint64 instance.
+func NewNativeSplitMapUint64(length uint32, buckets ...uint16) *NativeSplitMapUint64 {
 	useBuckets := uint16(1024)
 	if len(buckets) > 0 {
 		useBuckets = buckets[0]
 	}
 
-	m := &SplitSwissMapUint64{
-		m:           make(map[uint16]*SwissMapUint64, useBuckets),
+	m := &NativeSplitMapUint64{
+		m:           make(map[uint16]*NativeMapUint64, useBuckets),
 		nrOfBuckets: useBuckets,
 	}
 
 	for i := uint16(0); i <= m.nrOfBuckets; i++ {
-		m.m[i] = NewSwissMapUint64(length / uint32(m.nrOfBuckets))
+		m.m[i] = NewNativeMapUint64(length / uint32(m.nrOfBuckets))
 	}
 
 	return m
+}
+
+// NewDefaultSplitMapUint64 returns a native split map implementation. Use for general-purpose
+// hash-to-uint64 split maps when speed matters. Use NewSplitSwissMapUint64 when memory is constrained.
+func NewDefaultSplitMapUint64(length uint32, buckets ...uint16) *NativeSplitMapUint64 {
+	return NewNativeSplitMapUint64(length, buckets...)
 }
 
 // Exists checks if the given hash exists in the map.
@@ -947,15 +904,15 @@ func NewSplitSwissMapUint64(length uint32, buckets ...uint16) *SplitSwissMapUint
 //
 // Returns:
 //   - bool: True if the hash exists in the map, false otherwise.
-func (g *SplitSwissMapUint64) Exists(hash chainhash.Hash) bool {
+func (g *NativeSplitMapUint64) Exists(hash chainhash.Hash) bool {
 	return g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].Exists(hash)
 }
 
-// Map returns the underlying map of buckets used by SplitSwissMapUint64.
+// Map returns the underlying map of buckets used by NativeSplitMapUint64.
 //
 // Returns:
-//   - map[uint16]*SwissMapUint64: A map where the keys are bucket indices and the values are pointers to SwissMapUint64 instances.
-func (g *SplitSwissMapUint64) Map() map[uint16]*SwissMapUint64 {
+//   - map[uint16]*NativeMapUint64: A map where the keys are bucket indices and the values are pointers to NativeMapUint64 instances.
+func (g *NativeSplitMapUint64) Map() map[uint16]*NativeMapUint64 {
 	return g.m
 }
 
@@ -969,7 +926,7 @@ func (g *SplitSwissMapUint64) Map() map[uint16]*SwissMapUint64 {
 //
 // Returns:
 //   - error: An error if the hash already exists in the map, nil otherwise.
-func (g *SplitSwissMapUint64) Put(hash chainhash.Hash, n uint64) error {
+func (g *NativeSplitMapUint64) Put(hash chainhash.Hash, n uint64) error {
 	return g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].Put(hash, n)
 }
 
@@ -984,7 +941,7 @@ func (g *SplitSwissMapUint64) Put(hash chainhash.Hash, n uint64) error {
 //
 // Returns:
 //   - error: An error if any of the hashes already exist in the map, nil otherwise.
-func (g *SplitSwissMapUint64) PutMulti(hashes []chainhash.Hash, n uint64) error {
+func (g *NativeSplitMapUint64) PutMulti(hashes []chainhash.Hash, n uint64) error {
 	for _, hash := range hashes {
 		if err := g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].Put(hash, n); err != nil {
 			return fmt.Errorf("failed to put multi in bucket %d: %w", Bytes2Uint16Buckets(hash, g.nrOfBuckets), err)
@@ -1003,7 +960,7 @@ func (g *SplitSwissMapUint64) PutMulti(hashes []chainhash.Hash, n uint64) error 
 //
 // Returns:
 //   - error: An error if the hash does not exist in the map, nil otherwise.
-func (g *SplitSwissMapUint64) Set(hash chainhash.Hash, value uint64) error {
+func (g *NativeSplitMapUint64) Set(hash chainhash.Hash, value uint64) error {
 	return g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].Set(hash, value)
 }
 
@@ -1018,7 +975,7 @@ func (g *SplitSwissMapUint64) Set(hash chainhash.Hash, value uint64) error {
 // Returns:
 //   - bool: True if the hash was found and updated, false otherwise.
 //   - error: An error if there was an issue updating the hash, nil otherwise.
-func (g *SplitSwissMapUint64) SetIfExists(hash chainhash.Hash, value uint64) (bool, error) {
+func (g *NativeSplitMapUint64) SetIfExists(hash chainhash.Hash, value uint64) (bool, error) {
 	return g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].SetIfExists(hash, value)
 }
 
@@ -1033,7 +990,7 @@ func (g *SplitSwissMapUint64) SetIfExists(hash chainhash.Hash, value uint64) (bo
 // Returns:
 //   - bool: True if the hash was added, false if it already existed.
 //   - error: An error if there was an issue adding the hash, nil otherwise.
-func (g *SplitSwissMapUint64) SetIfNotExists(hash chainhash.Hash, value uint64) (bool, error) {
+func (g *NativeSplitMapUint64) SetIfNotExists(hash chainhash.Hash, value uint64) (bool, error) {
 	return g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].SetIfNotExists(hash, value)
 }
 
@@ -1046,7 +1003,7 @@ func (g *SplitSwissMapUint64) SetIfNotExists(hash chainhash.Hash, value uint64) 
 // Returns:
 //   - uint64: The value associated with the hash, or 0 if the hash does not exist.
 //   - bool: True if the hash was found in the map, false otherwise.
-func (g *SplitSwissMapUint64) Get(hash chainhash.Hash) (uint64, bool) {
+func (g *NativeSplitMapUint64) Get(hash chainhash.Hash) (uint64, bool) {
 	return g.m[Bytes2Uint16Buckets(hash, g.nrOfBuckets)].Get(hash)
 }
 
@@ -1055,7 +1012,7 @@ func (g *SplitSwissMapUint64) Get(hash chainhash.Hash) (uint64, bool) {
 //
 // Params:
 //   - f: A function that takes a hash and its associated uint64 value.
-func (g *SplitSwissMapUint64) Iter(f func(hash chainhash.Hash, value uint64) bool) {
+func (g *NativeSplitMapUint64) Iter(f func(hash chainhash.Hash, value uint64) bool) {
 	for i := uint16(0); i <= g.nrOfBuckets; i++ {
 		g.m[i].Iter(f)
 	}
@@ -1066,7 +1023,7 @@ func (g *SplitSwissMapUint64) Iter(f func(hash chainhash.Hash, value uint64) boo
 //
 // Returns:
 //   - int: The number of hashes currently stored in the map.
-func (g *SplitSwissMapUint64) Length() int {
+func (g *NativeSplitMapUint64) Length() int {
 	length := 0
 	for i := uint16(0); i <= g.nrOfBuckets; i++ {
 		length += g.m[i].length
@@ -1084,7 +1041,7 @@ func (g *SplitSwissMapUint64) Length() int {
 //
 // Returns:
 //   - error: An error if the hash does not exist in the map or if the bucket does not exist, nil otherwise.
-func (g *SplitSwissMapUint64) Delete(hash chainhash.Hash) error {
+func (g *NativeSplitMapUint64) Delete(hash chainhash.Hash) error {
 	bucket := Bytes2Uint16Buckets(hash, g.nrOfBuckets)
 
 	if _, ok := g.m[bucket]; !ok {
@@ -1098,39 +1055,83 @@ func (g *SplitSwissMapUint64) Delete(hash chainhash.Hash) error {
 	return g.m[bucket].Delete(hash)
 }
 
-// SplitSwissLockFreeMapUint64 is a map that splits the data into multiple buckets to reduce contention.
-// It uses SwissLockFreeMapUint64 for each bucket to store the hashes and their associated uint64 values.
-type SplitSwissLockFreeMapUint64 struct {
-	m           map[uint64]*SwissLockFreeMapUint64
+// Keys returns a slice of all hashes currently stored in the map.
+// It iterates over all buckets and collects the keys from each bucket.
+// The order of keys is not guaranteed.
+//
+// Returns:
+//   - []chainhash.Hash: A slice containing all the hashes in the map.
+func (g *NativeSplitMapUint64) Keys() []chainhash.Hash {
+	keys := make([]chainhash.Hash, 0, g.Length())
+
+	for i := uint16(0); i <= g.nrOfBuckets; i++ {
+		keys = append(keys, g.m[i].Keys()...)
+	}
+
+	return keys
+}
+
+// SplitLockFreeMapUint64 is the default split lock-free map type using native implementation.
+// Use NewDefaultSplitLockFreeMapUint64 to create instances.
+type SplitLockFreeMapUint64 = NativeSplitLockFreeMapUint64
+
+// NativeSplitLockFreeMapUint64 is a map that splits the data into multiple buckets to reduce contention.
+// It uses NativeLockFreeMapUint64 for each bucket to store the hashes and their associated uint64 values.
+type NativeSplitLockFreeMapUint64 struct {
+	m           map[uint64]*NativeLockFreeMapUint64
 	nrOfBuckets uint64
 }
 
-// NewSplitLockFreeMapDolthubUint64 creates a split lock-free map using dolthub/swiss (~30% less memory at 100M entries).
-func NewSplitLockFreeMapDolthubUint64(length int, buckets ...uint64) *SplitSwissLockFreeMapUint64 {
-	return newSplitSwissLockFreeMapUint64(length, buckets...)
-}
-
-// NewSplitSwissLockFreeMapUint64 creates a new SplitSwissLockFreeMapUint64 with the specified initial length.
-func NewSplitSwissLockFreeMapUint64(length int, buckets ...uint64) *SplitSwissLockFreeMapUint64 {
-	return newSplitSwissLockFreeMapUint64(length, buckets...)
-}
-
-func newSplitSwissLockFreeMapUint64(length int, buckets ...uint64) *SplitSwissLockFreeMapUint64 {
+// NewNativeSplitLockFreeMapUint64 creates a new NativeSplitLockFreeMapUint64 with the specified initial length.
+// The length is used to preallocate the size of each bucket.
+// It divides the length by the number of buckets to determine the size of each bucket.
+//
+// Params:
+//   - length: The initial length of the map, used for preallocation.
+//
+// Returns:
+//   - *NativeSplitLockFreeMapUint64: A pointer to the newly created NativeSplitLockFreeMapUint64 instance.
+func NewNativeSplitLockFreeMapUint64(length int, buckets ...uint64) *NativeSplitLockFreeMapUint64 {
 	useBuckets := uint64(1024)
 	if len(buckets) > 0 {
 		useBuckets = buckets[0]
 	}
 
-	m := &SplitSwissLockFreeMapUint64{
-		m:           make(map[uint64]*SwissLockFreeMapUint64, useBuckets),
+	m := &NativeSplitLockFreeMapUint64{
+		m:           make(map[uint64]*NativeLockFreeMapUint64, useBuckets),
 		nrOfBuckets: useBuckets,
 	}
 
 	for i := uint64(0); i <= m.nrOfBuckets; i++ {
-		m.m[i] = NewSwissLockFreeMapUint64(length / int(m.nrOfBuckets)) //nolint:gosec // integer overflow conversion uint64 -> int
+		m.m[i] = NewNativeLockFreeMapUint64(length / int(m.nrOfBuckets)) //nolint:gosec // integer overflow conversion uint64 -> int
 	}
 
 	return m
+}
+
+// NewDefaultSplitLockFreeMapUint64 returns a native split lock-free map.
+func NewDefaultSplitLockFreeMapUint64(length int, buckets ...uint64) *NativeSplitLockFreeMapUint64 {
+	return NewNativeSplitLockFreeMapUint64(length, buckets...)
+}
+
+// NewSplitLockFreeMapNativeUint64 creates a split lock-free map using Go's native map.
+func NewSplitLockFreeMapNativeUint64(length int, buckets ...uint64) *NativeSplitLockFreeMapUint64 {
+	return NewNativeSplitLockFreeMapUint64(length, buckets...)
+}
+
+// SplitLockFreeMapUint64Like is the interface for split lock-free maps (dolthub or native).
+type SplitLockFreeMapUint64Like interface {
+	Put(hash, value uint64) error
+	Get(hash uint64) (uint64, bool)
+	Length() int
+	Exists(hash uint64) bool
+	IterAll(f func(k, v uint64) (stop bool))
+	DeleteBucket(h uint64)
+}
+
+// LockFreeMapUint64Iterable has Iter for bucket iteration.
+type LockFreeMapUint64Iterable interface {
+	Iter(f func(k, v uint64) (stop bool))
 }
 
 // Exists checks if the given hash exists in the map.
@@ -1143,18 +1144,18 @@ func newSplitSwissLockFreeMapUint64(length int, buckets ...uint64) *SplitSwissLo
 //   - bool: True if the hash exists in the map, false otherwise.
 //
 // Considerations: This method does not lock the map, so it is not suitable for concurrent access.
-func (g *SplitSwissLockFreeMapUint64) Exists(hash uint64) bool {
+func (g *NativeSplitLockFreeMapUint64) Exists(hash uint64) bool {
 	return g.m[hash%g.nrOfBuckets].Exists(hash)
 }
 
-// Map returns the underlying map of buckets used by SplitSwissLockFreeMapUint64.
+// Map returns the underlying map of buckets used by NativeSplitLockFreeMapUint64.
 // It provides access to the map for operations that do not require locking.
 //
 // Returns:
-//   - map[uint64]*SwissLockFreeMapUint64: A map where the keys are bucket indices and the values are pointers to SwissLockFreeMapUint64 instances.
+//   - map[uint64]*NativeLockFreeMapUint64: A map where the keys are bucket indices and the values are pointers to NativeLockFreeMapUint64 instances.
 //
 // Considerations: This method does not lock the map, so it is not suitable for concurrent access.
-func (g *SplitSwissLockFreeMapUint64) Map() map[uint64]*SwissLockFreeMapUint64 {
+func (g *NativeSplitLockFreeMapUint64) Map() map[uint64]*NativeLockFreeMapUint64 {
 	return g.m
 }
 
@@ -1170,7 +1171,7 @@ func (g *SplitSwissLockFreeMapUint64) Map() map[uint64]*SwissLockFreeMapUint64 {
 //   - error: An error if the hash already exists in the map, nil otherwise.
 //
 // Considerations: This method does not lock the map, so it is not suitable for concurrent access.
-func (g *SplitSwissLockFreeMapUint64) Put(hash, n uint64) error {
+func (g *NativeSplitLockFreeMapUint64) Put(hash, n uint64) error {
 	return g.m[hash%g.nrOfBuckets].Put(hash, n)
 }
 
@@ -1185,26 +1186,8 @@ func (g *SplitSwissLockFreeMapUint64) Put(hash, n uint64) error {
 //   - bool: True if the hash was found in the map, false otherwise.
 //
 // Considerations: This method does not lock the map, so it is not suitable for concurrent access.
-func (g *SplitSwissLockFreeMapUint64) Get(hash uint64) (uint64, bool) {
+func (g *NativeSplitLockFreeMapUint64) Get(hash uint64) (uint64, bool) {
 	return g.m[hash%g.nrOfBuckets].Get(hash)
-}
-
-// Keys returns a slice of all hashes currently stored in the map.
-// It iterates over all buckets and collects the keys from each bucket.
-// The order of keys is not guaranteed.
-//
-// Returns:
-//   - []chainhash.Hash: A slice containing all the hashes in the map.
-//
-// Considerations: This method does not lock the map, so it is not suitable for concurrent access.
-func (g *SplitSwissMapUint64) Keys() []chainhash.Hash {
-	keys := make([]chainhash.Hash, 0, g.Length())
-
-	for i := uint16(0); i <= g.nrOfBuckets; i++ {
-		keys = append(keys, g.m[i].Keys()...)
-	}
-
-	return keys
 }
 
 // Length returns the current number of hashes in the map.
@@ -1213,7 +1196,7 @@ func (g *SplitSwissMapUint64) Keys() []chainhash.Hash {
 //
 // Returns:
 //   - int: The number of hashes currently stored in the map.
-func (g *SplitSwissLockFreeMapUint64) Length() int {
+func (g *NativeSplitLockFreeMapUint64) Length() int {
 	length := 0
 	for i := uint64(0); i <= g.nrOfBuckets; i++ {
 		length += int(g.m[i].length.Load())
@@ -1223,7 +1206,7 @@ func (g *SplitSwissLockFreeMapUint64) Length() int {
 }
 
 // IterAll iterates over all key-value pairs across all buckets. Stops if f returns true.
-func (g *SplitSwissLockFreeMapUint64) IterAll(f func(k, v uint64) (stop bool)) {
+func (g *NativeSplitLockFreeMapUint64) IterAll(f func(k, v uint64) (stop bool)) {
 	for i := uint64(0); i <= g.nrOfBuckets; i++ {
 		g.m[i].Iter(func(k, v uint64) (stop bool) {
 			return f(k, v)
@@ -1232,20 +1215,6 @@ func (g *SplitSwissLockFreeMapUint64) IterAll(f func(k, v uint64) (stop bool)) {
 }
 
 // DeleteBucket removes the bucket at index h from the map of buckets.
-func (g *SplitSwissLockFreeMapUint64) DeleteBucket(h uint64) {
+func (g *NativeSplitLockFreeMapUint64) DeleteBucket(h uint64) {
 	delete(g.m, h)
-}
-
-// Bytes2Uint16Buckets converts the first two bytes of a chainhash.Hash to a uint16 value
-// and returns the result modulo the specified value.
-// This function is used to determine the bucket index for a given hash in a split map.
-//
-// Params:
-//   - b: The chainhash.Hash to convert.
-//   - mod: The value to use for the modulo operation.
-//
-// Returns:
-//   - uint16: The resulting value after conversion and modulo operation.
-func Bytes2Uint16Buckets(b chainhash.Hash, mod uint16) uint16 {
-	return (uint16(b[0])<<8 | uint16(b[1])) % mod
 }
