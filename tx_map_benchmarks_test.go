@@ -117,70 +117,70 @@ func TestMemoryConsumption(t *testing.T) {
 		{"SplitMap/dolthub", func() interface{} {
 			m := NewSplitSwissMap(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}},
 		{"SplitMap/native", func() interface{} {
 			m := NewNativeSplitMap(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}},
 		{"MapUint64/dolthub", func() interface{} {
 			m := NewSwissMapUint64(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}},
 		{"MapUint64/native", func() interface{} {
 			m := NewNativeMapUint64(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}},
 		{"SplitMapUint64/dolthub", func() interface{} {
 			m := NewSplitSwissMapUint64(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}},
 		{"SplitMapUint64/native", func() interface{} {
 			m := NewNativeSplitMapUint64(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}},
 		{"LockFreeMapUint64/dolthub", func() interface{} {
 			m := NewSwissLockFreeMapUint64(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, memoryTestSize]
+				_ = m.Put(uint64(i), uint64(i))
 			}
 			return m
 		}},
 		{"LockFreeMapUint64/native", func() interface{} {
 			m := NewNativeLockFreeMapUint64(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, memoryTestSize]
+				_ = m.Put(uint64(i), uint64(i))
 			}
 			return m
 		}},
 		{"SplitLockFreeMapUint64/dolthub", func() interface{} {
 			m := NewSplitSwissLockFreeMapUint64(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, memoryTestSize]
+				_ = m.Put(uint64(i), uint64(i))
 			}
 			return m
 		}},
 		{"SplitLockFreeMapUint64/native", func() interface{} {
 			m := NewNativeSplitLockFreeMapUint64(memoryTestSize)
 			for i := 0; i < memoryTestSize; i++ {
-				_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, memoryTestSize]
+				_ = m.Put(uint64(i), uint64(i))
 			}
 			return m
 		}},
@@ -341,7 +341,7 @@ func BenchmarkGet(b *testing.B) {
 		populateBenchCase("SplitMap/dolthub", func() interface{} {
 			m := NewSplitSwissMap(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}, func(m interface{}, i int) {
@@ -350,7 +350,7 @@ func BenchmarkGet(b *testing.B) {
 		populateBenchCase("SplitMap/native", func() interface{} {
 			m := NewNativeSplitMap(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}, func(m interface{}, i int) {
@@ -359,7 +359,7 @@ func BenchmarkGet(b *testing.B) {
 		populateBenchCase("MapUint64/dolthub", func() interface{} {
 			m := NewSwissMapUint64(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}, func(m interface{}, i int) {
@@ -368,7 +368,7 @@ func BenchmarkGet(b *testing.B) {
 		populateBenchCase("MapUint64/native", func() interface{} {
 			m := NewNativeMapUint64(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}, func(m interface{}, i int) {
@@ -377,7 +377,7 @@ func BenchmarkGet(b *testing.B) {
 		populateBenchCase("SplitMapUint64/dolthub", func() interface{} {
 			m := NewSplitSwissMapUint64(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}, func(m interface{}, i int) {
@@ -386,7 +386,7 @@ func BenchmarkGet(b *testing.B) {
 		populateBenchCase("SplitMapUint64/native", func() interface{} {
 			m := NewNativeSplitMapUint64(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}, func(m interface{}, i int) {
@@ -395,7 +395,7 @@ func BenchmarkGet(b *testing.B) {
 		populateBenchCase("LockFreeMapUint64/dolthub", func() interface{} {
 			m := NewSwissLockFreeMapUint64(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(uint64(i), uint64(i))
 			}
 			return m
 		}, func(m interface{}, i int) {
@@ -404,7 +404,7 @@ func BenchmarkGet(b *testing.B) {
 		populateBenchCase("LockFreeMapUint64/native", func() interface{} {
 			m := NewNativeLockFreeMapUint64(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(uint64(i), uint64(i))
 			}
 			return m
 		}, func(m interface{}, i int) {
@@ -413,7 +413,7 @@ func BenchmarkGet(b *testing.B) {
 		populateBenchCase("SplitLockFreeMapUint64/dolthub", func() interface{} {
 			m := NewSplitSwissLockFreeMapUint64(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(uint64(i), uint64(i))
 			}
 			return m
 		}, func(m interface{}, i int) {
@@ -422,7 +422,7 @@ func BenchmarkGet(b *testing.B) {
 		populateBenchCase("SplitLockFreeMapUint64/native", func() interface{} {
 			m := NewNativeSplitLockFreeMapUint64(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(uint64(i), uint64(i))
 			}
 			return m
 		}, func(m interface{}, i int) {
@@ -465,70 +465,70 @@ func BenchmarkExists(b *testing.B) {
 		populateBenchCase("SplitMap/dolthub", func() interface{} {
 			m := NewSplitSwissMap(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}, existsHash),
 		populateBenchCase("SplitMap/native", func() interface{} {
 			m := NewNativeSplitMap(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}, existsHash),
 		populateBenchCase("MapUint64/dolthub", func() interface{} {
 			m := NewSwissMapUint64(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}, existsHash),
 		populateBenchCase("MapUint64/native", func() interface{} {
 			m := NewNativeMapUint64(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}, existsHash),
 		populateBenchCase("SplitMapUint64/dolthub", func() interface{} {
 			m := NewSplitSwissMapUint64(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}, existsHash),
 		populateBenchCase("SplitMapUint64/native", func() interface{} {
 			m := NewNativeSplitMapUint64(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}, existsHash),
 		populateBenchCase("LockFreeMapUint64/dolthub", func() interface{} {
 			m := NewSwissLockFreeMapUint64(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(uint64(i), uint64(i))
 			}
 			return m
 		}, existsUint64),
 		populateBenchCase("LockFreeMapUint64/native", func() interface{} {
 			m := NewNativeLockFreeMapUint64(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(uint64(i), uint64(i))
 			}
 			return m
 		}, existsUint64),
 		populateBenchCase("SplitLockFreeMapUint64/dolthub", func() interface{} {
 			m := NewSplitSwissLockFreeMapUint64(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(uint64(i), uint64(i))
 			}
 			return m
 		}, existsUint64),
 		populateBenchCase("SplitLockFreeMapUint64/native", func() interface{} {
 			m := NewNativeSplitLockFreeMapUint64(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(uint64(i), uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(uint64(i), uint64(i))
 			}
 			return m
 		}, existsUint64),
@@ -568,42 +568,42 @@ func BenchmarkDelete(b *testing.B) {
 		populateBenchCase("SplitMap/dolthub", func() interface{} {
 			m := NewSplitSwissMap(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}, deleteHash),
 		populateBenchCase("SplitMap/native", func() interface{} {
 			m := NewNativeSplitMap(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}, deleteHash),
 		populateBenchCase("MapUint64/dolthub", func() interface{} {
 			m := NewSwissMapUint64(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}, deleteHash),
 		populateBenchCase("MapUint64/native", func() interface{} {
 			m := NewNativeMapUint64(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}, deleteHash),
 		populateBenchCase("SplitMapUint64/dolthub", func() interface{} {
 			m := NewSplitSwissMapUint64(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}, deleteHash),
 		populateBenchCase("SplitMapUint64/native", func() interface{} {
 			m := NewNativeSplitMapUint64(size)
 			for i := 0; i < size; i++ {
-				_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i in range [0, size]
+				_ = m.Put(hashes[i], uint64(i))
 			}
 			return m
 		}, deleteHash),
@@ -619,7 +619,7 @@ func BenchmarkSwissMapUint64Iter(b *testing.B) {
 	b.Run("dolthub", func(b *testing.B) {
 		m := NewSwissMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
+			_ = m.Put(hashes[i], uint64(i))
 		}
 
 		b.ReportAllocs()
@@ -635,7 +635,7 @@ func BenchmarkSwissMapUint64Iter(b *testing.B) {
 	b.Run("native", func(b *testing.B) {
 		m := NewNativeMapUint64(size)
 		for i := 0; i < size; i++ {
-			_ = m.Put(hashes[i], uint64(i)) //nolint:gosec // G115: i is in range [0, memoryTestSize]
+			_ = m.Put(hashes[i], uint64(i))
 		}
 
 		b.ReportAllocs()
@@ -664,7 +664,7 @@ func BenchmarkSwissMapUint64Delete(b *testing.B) {
 			b.StopTimer()
 			m := NewSwissMapUint64(size)
 			for j := 0; j < size; j++ {
-				_ = m.Put(hashes[j], uint64(j)) //nolint:gosec // G115: j in range [0, size]
+				_ = m.Put(hashes[j], uint64(j))
 			}
 			b.StartTimer()
 
@@ -682,7 +682,7 @@ func BenchmarkSwissMapUint64Delete(b *testing.B) {
 			b.StopTimer()
 			m := NewNativeMapUint64(size)
 			for j := 0; j < size; j++ {
-				_ = m.Put(hashes[j], uint64(j)) //nolint:gosec // G115: j in range [0, size]
+				_ = m.Put(hashes[j], uint64(j))
 			}
 			b.StartTimer()
 

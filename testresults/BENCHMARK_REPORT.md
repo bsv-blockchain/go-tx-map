@@ -1,6 +1,6 @@
 # Swiss Map Implementation Benchmark Report
 
-**Test Environment:** Intel Core i9-9880H @ 2.30GHz, darwin/amd64  
+**Test Environment:** Intel Core i9-9880H @ 2.30GHz, darwin/amd64
 **Iterations:** 10,000,000 per benchmark
 
 ---
