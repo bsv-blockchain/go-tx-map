@@ -190,6 +190,46 @@ func (m *SyncedMap[K, V]) SetMulti(keys []K, value V) {
 	}
 }
 
+// SetIfNotExistsMulti inserts each keys[i] -> values[i] pair under a single
+// write-lock acquisition. Matches SetIfNotExists semantics per element: if a
+// key already exists in the map its value is left unchanged.
+//
+// Parameters:
+//   - keys: A slice of keys to insert.
+//   - values: A slice of values to associate with each key. If shorter than
+//     keys, only the first len(values) pairs are considered.
+//
+// Returns:
+//   - []bool: A slice of length min(len(keys), len(values)). wasInserted[i]
+//     is true if keys[i] was newly added, false if the key already existed.
+//
+// Designed for bucket-affinity bulk inserts where the caller has pre-
+// partitioned its workload so a single bucket's map is written by a single
+// goroutine; eliminates the per-element Lock/Unlock overhead of calling
+// SetIfNotExists in a loop.
+func (m *SyncedMap[K, V]) SetIfNotExistsMulti(keys []K, values []V) []bool {
+	n := len(keys)
+	if len(values) < n {
+		n = len(values)
+	}
+
+	wasInserted := make([]bool, n)
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	for i := 0; i < n; i++ {
+		if _, ok := m.m[keys[i]]; ok {
+			continue
+		}
+
+		m.setUnlocked(keys[i], values[i])
+		wasInserted[i] = true
+	}
+
+	return wasInserted
+}
+
 // Delete removes the key and its value from the SyncedMap.
 //
 // Parameters:

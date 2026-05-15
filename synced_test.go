@@ -128,6 +128,62 @@ func TestSyncedMapSetMulti(t *testing.T) {
 	assert.Equal(t, 1, m.m["key2"])
 }
 
+// TestSyncedMapSetIfNotExistsMulti tests the SetIfNotExistsMulti method of
+// SyncedMap including the per-element wasInserted contract and slice-length
+// mismatch handling.
+func TestSyncedMapSetIfNotExistsMulti(t *testing.T) {
+	t.Run("all new keys are inserted", func(t *testing.T) {
+		m := NewSyncedMap[string, int]()
+		wasInserted := m.SetIfNotExistsMulti([]string{"a", "b", "c"}, []int{1, 2, 3})
+
+		assert.Equal(t, []bool{true, true, true}, wasInserted)
+		assert.Equal(t, 1, m.m["a"])
+		assert.Equal(t, 2, m.m["b"])
+		assert.Equal(t, 3, m.m["c"])
+	})
+
+	t.Run("existing keys are preserved", func(t *testing.T) {
+		m := NewSyncedMap[string, int]()
+		m.Set("b", 99)
+
+		wasInserted := m.SetIfNotExistsMulti([]string{"a", "b", "c"}, []int{1, 2, 3})
+		assert.Equal(t, []bool{true, false, true}, wasInserted)
+		assert.Equal(t, 1, m.m["a"])
+		assert.Equal(t, 99, m.m["b"]) // preserved
+		assert.Equal(t, 3, m.m["c"])
+	})
+
+	t.Run("empty input returns empty slice", func(t *testing.T) {
+		m := NewSyncedMap[string, int]()
+		wasInserted := m.SetIfNotExistsMulti(nil, nil)
+		assert.Equal(t, []bool{}, wasInserted)
+		assert.Equal(t, 0, m.Length())
+	})
+
+	t.Run("values shorter than keys truncates to len(values)", func(t *testing.T) {
+		m := NewSyncedMap[string, int]()
+		wasInserted := m.SetIfNotExistsMulti([]string{"a", "b", "c"}, []int{1, 2})
+		assert.Equal(t, []bool{true, true}, wasInserted)
+		assert.Equal(t, 2, m.Length())
+		_, exists := m.m["c"]
+		assert.False(t, exists)
+	})
+
+	t.Run("keys shorter than values truncates to len(keys)", func(t *testing.T) {
+		m := NewSyncedMap[string, int]()
+		wasInserted := m.SetIfNotExistsMulti([]string{"a"}, []int{1, 2, 3})
+		assert.Equal(t, []bool{true}, wasInserted)
+		assert.Equal(t, 1, m.Length())
+	})
+
+	t.Run("duplicate keys within a single call: first wins", func(t *testing.T) {
+		m := NewSyncedMap[string, int]()
+		wasInserted := m.SetIfNotExistsMulti([]string{"a", "a", "a"}, []int{1, 2, 3})
+		assert.Equal(t, []bool{true, false, false}, wasInserted)
+		assert.Equal(t, 1, m.m["a"])
+	})
+}
+
 // TestSyncedMapDelete tests the Delete and Exists methods of SyncedMap.
 func TestSyncedMapDelete(t *testing.T) {
 	m := NewSyncedMap[string, int]()
