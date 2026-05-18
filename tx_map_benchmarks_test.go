@@ -770,3 +770,27 @@ func BenchmarkNewSwissMap(b *testing.B) {
 func BenchmarkNewSwissMapUint64(b *testing.B) {
 	runNewBench(b, func() interface{} { return NewSwissMapUint64(1000) }, func() interface{} { return NewNativeMapUint64(1000) })
 }
+
+// BenchmarkSplitSwissMapUint64_NoRehash inserts 1M pre-sized entries into a
+// SplitSwissMapUint64 constructed with the exact target capacity. With the
+// 20% per-bucket headroom in NewSplitSwissMapUint64, no bucket should trip
+// the dolthub/swiss load-factor limit, so allocs/op should be near zero
+// (the only allocations are the initial construction, which is outside the
+// timed loop after b.ResetTimer).
+func BenchmarkSplitSwissMapUint64_NoRehash(b *testing.B) {
+	const size = 1_000_000
+	hashes := getTestHashes(size)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		m := NewSplitSwissMapUint64(size)
+		b.StartTimer()
+
+		for j := 0; j < size; j++ {
+			_ = m.Put(hashes[j], uint64(j)) //nolint:gosec // G115: j from bounded loop
+		}
+	}
+}

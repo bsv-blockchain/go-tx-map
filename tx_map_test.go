@@ -133,6 +133,30 @@ func TestNewSplitSwissMapUint64(t *testing.T) {
 	})
 }
 
+// TestNewSplitSwissMapUint64Headroom verifies that NewSplitSwissMapUint64 allocates
+// each bucket with 20% headroom over length/nrOfBuckets. With nrOfBuckets=1024 and
+// length=14*1024 (the load-factor limit for a single dolthub group per bucket), the
+// underlying dolthub/swiss.Map for bucket 0 must have free capacity >= ceil(perBucket*1.2)
+// so that filling it to perBucket items does not trigger a rehash.
+func TestNewSplitSwissMapUint64Headroom(t *testing.T) {
+	const nrOfBuckets = uint32(1024)
+	const length = uint32(14 * 1024)
+	expectedMin := int(((length + length/5) / nrOfBuckets))
+
+	m := NewSplitSwissMapUint64(length)
+	require.NotNil(t, m)
+
+	bucket0 := m.Map()[0]
+	require.NotNil(t, bucket0)
+
+	// Capacity() on dolthub/swiss.Map returns remaining capacity until rehash.
+	// Since the map is freshly allocated and empty, this equals the load-factor limit.
+	cap0 := bucket0.Map().Capacity()
+	require.GreaterOrEqual(t, cap0, expectedMin,
+		"bucket 0 should have at least %d capacity (length=%d, buckets=%d, 1.2x headroom); got %d",
+		expectedMin, length, nrOfBuckets, cap0)
+}
+
 // TestNewSwissMapUint64 tests the creation and basic usage of a SwissMapUint64.
 func TestNewSwissMapUint64(t *testing.T) {
 	t.Run("NewSwissMapUint64", func(t *testing.T) {

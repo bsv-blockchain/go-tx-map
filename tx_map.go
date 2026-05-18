@@ -914,7 +914,9 @@ type SplitSwissMapUint64 struct {
 
 // NewSplitSwissMapUint64 creates a new SplitSwissMapUint64 with the specified initial length.
 // The length is used to preallocate the size of each bucket.
-// It divides the length by the number of buckets to determine the size of each bucket.
+// It divides the length by the number of buckets to determine the size of each bucket,
+// and applies a 20% headroom so the underlying dolthub/swiss map does not rehash on
+// natural Binomial(N, 1/B) hash variance.
 //
 // Params:
 //   - length: The initial length of the map, used for preallocation.
@@ -932,8 +934,14 @@ func NewSplitSwissMapUint64(length uint32, buckets ...uint16) *SplitSwissMapUint
 		nrOfBuckets: useBuckets,
 	}
 
+	// 20% headroom per bucket: max-of-B order statistic for Binomial(N, 1/B)
+	// is roughly mean × 1.005 at N=1e8+, so 20% gives a ~250× safety margin
+	// over natural hash variance and prevents the dolthub/swiss load-factor
+	// limit from triggering a rehash mid-fill.
+	perBucket := (length + length/5) / uint32(m.nrOfBuckets)
+
 	for i := uint16(0); i <= m.nrOfBuckets; i++ {
-		m.m[i] = NewSwissMapUint64(length / uint32(m.nrOfBuckets))
+		m.m[i] = NewSwissMapUint64(perBucket)
 	}
 
 	return m
