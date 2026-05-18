@@ -240,6 +240,17 @@ func (s *SwissMap) Length() int {
 	return s.length
 }
 
+// Clear empties the map without releasing the underlying group/ctrl backing
+// storage. Intended for sync.Pool reuse: Clear → Put → next Get hands a
+// zero-length map with the same preallocation intact.
+func (s *SwissMap) Clear() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.m.Clear()
+	s.length = 0
+}
+
 // Keys returns a slice of all hashes currently stored in the map.
 // It iterates over the map and collects the keys.
 // The order of keys is not guaranteed.
@@ -488,6 +499,21 @@ func (s *SwissMapUint64) Length() int {
 	defer s.mu.RUnlock()
 
 	return s.length
+}
+
+// Clear empties the map without releasing the underlying group/ctrl backing
+// storage. This is the operation a pool wants: reset state for the next user
+// while keeping the (often multi-GB) preallocation intact.
+//
+// Safe for concurrent use — takes the write lock. Callers that are about to
+// return a SwissMapUint64 to a sync.Pool should call Clear immediately before
+// Put so the next Get receives a zero-length map.
+func (s *SwissMapUint64) Clear() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.m.Clear()
+	s.length = 0
 }
 
 // Keys returns a slice of all hashes currently stored in the map.
@@ -1081,6 +1107,20 @@ func (g *SplitSwissMapUint64) Length() int {
 	}
 
 	return length
+}
+
+// Clear empties every bucket without releasing the per-bucket group/ctrl
+// backing storage. Intended for sync.Pool reuse: a 30 GB SplitSwissMapUint64
+// can be Clear()ed in a few milliseconds (zeroing ctrl bytes) and handed back
+// to the pool without re-allocating any of its buckets.
+//
+// Each underlying SwissMapUint64.Clear takes the write lock — concurrent
+// readers will block until Clear completes. Callers should ensure no other
+// goroutine is using the map before calling Clear.
+func (g *SplitSwissMapUint64) Clear() {
+	for i := uint16(0); i <= g.nrOfBuckets; i++ {
+		g.m[i].Clear()
+	}
 }
 
 // Delete removes a hash from the map.

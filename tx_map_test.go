@@ -518,3 +518,86 @@ func TestSplitSwissMapDelete(t *testing.T) {
 		})
 	}
 }
+
+// TestSwissMapUint64Clear verifies that Clear empties the map while
+// preserving the underlying preallocation so the same instance can be
+// reused via sync.Pool without re-allocating.
+func TestSwissMapUint64Clear(t *testing.T) {
+	m := NewSwissMapUint64(1024)
+	for i := 0; i < 100; i++ {
+		var h chainhash.Hash
+		h[0] = byte(i)
+		require.NoError(t, m.Put(h, uint64(i)))
+	}
+	require.Equal(t, 100, m.Length())
+
+	m.Clear()
+	require.Equal(t, 0, m.Length())
+
+	// Underlying capacity should still be present — re-fill without any
+	// rehash. We can't directly observe rehash from outside, but we can
+	// assert that lookups behave correctly after Clear+refill.
+	for i := 0; i < 100; i++ {
+		var h chainhash.Hash
+		h[0] = byte(i)
+		require.NoError(t, m.Put(h, uint64(i*2)))
+	}
+	for i := 0; i < 100; i++ {
+		var h chainhash.Hash
+		h[0] = byte(i)
+		v, ok := m.Get(h)
+		require.True(t, ok)
+		require.Equal(t, uint64(i*2), v)
+	}
+}
+
+// TestSplitSwissMapUint64Clear verifies that Clear empties every bucket.
+func TestSplitSwissMapUint64Clear(t *testing.T) {
+	m := NewSplitSwissMapUint64(10_000)
+	for i := 0; i < 1000; i++ {
+		var h chainhash.Hash
+		h[0] = byte(i)
+		h[1] = byte(i >> 8)
+		require.NoError(t, m.Put(h, uint64(i)))
+	}
+	require.Equal(t, 1000, m.Length())
+
+	m.Clear()
+	require.Equal(t, 0, m.Length())
+
+	// Re-fill and lookup.
+	for i := 0; i < 1000; i++ {
+		var h chainhash.Hash
+		h[0] = byte(i)
+		h[1] = byte(i >> 8)
+		require.NoError(t, m.Put(h, uint64(i*3)))
+	}
+	for i := 0; i < 1000; i++ {
+		var h chainhash.Hash
+		h[0] = byte(i)
+		h[1] = byte(i >> 8)
+		v, ok := m.Get(h)
+		require.True(t, ok)
+		require.Equal(t, uint64(i*3), v)
+	}
+}
+
+// TestSwissMapClear verifies Clear on the value-less SwissMap.
+func TestSwissMapClear(t *testing.T) {
+	m := NewSwissMap(1024)
+	for i := 0; i < 100; i++ {
+		var h chainhash.Hash
+		h[0] = byte(i)
+		require.NoError(t, m.Put(h))
+	}
+	require.Equal(t, 100, m.Length())
+
+	m.Clear()
+	require.Equal(t, 0, m.Length())
+
+	for i := 0; i < 100; i++ {
+		var h chainhash.Hash
+		h[0] = byte(i)
+		assert.False(t, m.Exists(h))
+	}
+}
