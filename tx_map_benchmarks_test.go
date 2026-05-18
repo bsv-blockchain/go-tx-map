@@ -790,7 +790,7 @@ func BenchmarkSplitSwissMapUint64_NoRehash(b *testing.B) {
 		b.StartTimer()
 
 		for j := 0; j < size; j++ {
-			_ = m.Put(hashes[j], uint64(j)) //nolint:gosec // G115: j from bounded loop
+			_ = m.Put(hashes[j], uint64(j))
 		}
 	}
 }
