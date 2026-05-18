@@ -133,6 +133,30 @@ func TestNewSplitSwissMapUint64(t *testing.T) {
 	})
 }
 
+// TestNewSplitSwissMapUint64Headroom verifies that NewSplitSwissMapUint64 allocates
+// each bucket with 20% headroom over length/nrOfBuckets. With nrOfBuckets=1024 and
+// length=14*1024 (the load-factor limit for a single dolthub group per bucket), the
+// underlying dolthub/swiss.Map for bucket 0 must have free capacity >= ceil(perBucket*1.2)
+// so that filling it to perBucket items does not trigger a rehash.
+func TestNewSplitSwissMapUint64Headroom(t *testing.T) {
+	const nrOfBuckets = uint32(1024)
+	const length = uint32(14 * 1024)
+	expectedMin := int(((length + length/5) / nrOfBuckets))
+
+	m := NewSplitSwissMapUint64(length)
+	require.NotNil(t, m)
+
+	bucket0 := m.Map()[0]
+	require.NotNil(t, bucket0)
+
+	// Capacity() on dolthub/swiss.Map returns remaining capacity until rehash.
+	// Since the map is freshly allocated and empty, this equals the load-factor limit.
+	cap0 := bucket0.Map().Capacity()
+	require.GreaterOrEqual(t, cap0, expectedMin,
+		"bucket 0 should have at least %d capacity (length=%d, buckets=%d, 1.2x headroom); got %d",
+		expectedMin, length, nrOfBuckets, cap0)
+}
+
 // TestNewSwissMapUint64 tests the creation and basic usage of a SwissMapUint64.
 func TestNewSwissMapUint64(t *testing.T) {
 	t.Run("NewSwissMapUint64", func(t *testing.T) {
@@ -492,5 +516,88 @@ func TestSplitSwissMapDelete(t *testing.T) {
 				assert.False(t, m.Exists(hash))
 			}
 		})
+	}
+}
+
+// TestSwissMapUint64Clear verifies that Clear empties the map while
+// preserving the underlying preallocation so the same instance can be
+// reused via sync.Pool without re-allocating.
+func TestSwissMapUint64Clear(t *testing.T) {
+	m := NewSwissMapUint64(1024)
+	for i := 0; i < 100; i++ {
+		var h chainhash.Hash
+		h[0] = byte(i)
+		require.NoError(t, m.Put(h, uint64(i)))
+	}
+	require.Equal(t, 100, m.Length())
+
+	m.Clear()
+	require.Equal(t, 0, m.Length())
+
+	// Underlying capacity should still be present — re-fill without any
+	// rehash. We can't directly observe rehash from outside, but we can
+	// assert that lookups behave correctly after Clear+refill.
+	for i := 0; i < 100; i++ {
+		var h chainhash.Hash
+		h[0] = byte(i)
+		require.NoError(t, m.Put(h, uint64(i*2)))
+	}
+	for i := 0; i < 100; i++ {
+		var h chainhash.Hash
+		h[0] = byte(i)
+		v, ok := m.Get(h)
+		require.True(t, ok)
+		require.Equal(t, uint64(i*2), v)
+	}
+}
+
+// TestSplitSwissMapUint64Clear verifies that Clear empties every bucket.
+func TestSplitSwissMapUint64Clear(t *testing.T) {
+	m := NewSplitSwissMapUint64(10_000)
+	for i := 0; i < 1000; i++ {
+		var h chainhash.Hash
+		h[0] = byte(i)
+		h[1] = byte(i >> 8)
+		require.NoError(t, m.Put(h, uint64(i)))
+	}
+	require.Equal(t, 1000, m.Length())
+
+	m.Clear()
+	require.Equal(t, 0, m.Length())
+
+	// Re-fill and lookup.
+	for i := 0; i < 1000; i++ {
+		var h chainhash.Hash
+		h[0] = byte(i)
+		h[1] = byte(i >> 8)
+		require.NoError(t, m.Put(h, uint64(i*3)))
+	}
+	for i := 0; i < 1000; i++ {
+		var h chainhash.Hash
+		h[0] = byte(i)
+		h[1] = byte(i >> 8)
+		v, ok := m.Get(h)
+		require.True(t, ok)
+		require.Equal(t, uint64(i*3), v)
+	}
+}
+
+// TestSwissMapClear verifies Clear on the value-less SwissMap.
+func TestSwissMapClear(t *testing.T) {
+	m := NewSwissMap(1024)
+	for i := 0; i < 100; i++ {
+		var h chainhash.Hash
+		h[0] = byte(i)
+		require.NoError(t, m.Put(h))
+	}
+	require.Equal(t, 100, m.Length())
+
+	m.Clear()
+	require.Equal(t, 0, m.Length())
+
+	for i := 0; i < 100; i++ {
+		var h chainhash.Hash
+		h[0] = byte(i)
+		assert.False(t, m.Exists(h))
 	}
 }
