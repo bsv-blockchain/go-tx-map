@@ -579,12 +579,16 @@ func (s *SwissMapUint64) Length() int {
 }
 
 // Clear empties the map without releasing the underlying group/ctrl backing
-// storage. This is the operation a pool wants: reset state for the next user
-// while keeping the (often multi-GB) preallocation intact.
+// storage, and un-freezes it. This is the operation a pool wants: reset state
+// for the next user while keeping the (often multi-GB) preallocation intact.
 //
-// Safe for concurrent use — takes the write lock. Callers that are about to
-// return a SwissMapUint64 to a sync.Pool should call Clear immediately before
-// Put so the next Get receives a zero-length map.
+// Per the Freeze/Clear contract (see freeze.go), Clear must not run
+// concurrently with any other operation on the map: after Freeze, readers skip
+// the RWMutex, so a concurrent Clear would race their lock-free reads of the
+// underlying map. The write lock only orders Clear against other locked,
+// non-frozen operations. Callers returning a SwissMapUint64 to a sync.Pool
+// should call Clear immediately before Put so the next Get receives a
+// zero-length map.
 func (s *SwissMapUint64) Clear() {
 	s.mu.Lock()
 	defer s.mu.Unlock()

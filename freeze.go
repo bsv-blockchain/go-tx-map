@@ -8,7 +8,9 @@ package txmap
 // Keys, Iter) skip the per-bucket RWMutex.RLock. Acquiring an RLock performs an
 // atomic add/sub on the reader counter, and under many cores reading the same
 // shard that cache line ping-pongs between CPUs and dominates the profile.
-// After Freeze, reads do a single relaxed atomic load of a bool flag instead.
+// After Freeze, reads do a single atomic load of a bool flag instead (Go's
+// sync/atomic operations are sequentially consistent, but a lone Load touches
+// only the flag's cache line and does not write, so it avoids the ping-pong).
 //
 // Once frozen, every write method (Put, PutMulti, Set, SetIfExists,
 // SetIfNotExists, Delete) returns ErrMapFrozen rather than silently mutating a
