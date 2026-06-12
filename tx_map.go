@@ -76,6 +76,15 @@ type TxMap interface {
 	SetIfExists(hash chainhash.Hash, value uint64) (bool, error)
 	SetIfNotExists(hash chainhash.Hash, value uint64) (bool, error)
 	Iter(f func(hash chainhash.Hash, value uint64) bool)
+
+	// Freeze marks the map read-only. After Freeze, read methods skip locking
+	// (on lock-based implementations) and every write method returns ErrMapFrozen.
+	// Clear un-freezes. See the package-level Freeze documentation in freeze.go.
+	Freeze()
+
+	// Clear empties the map in place (retaining preallocated capacity) and
+	// un-freezes it, so a pooled map can be recycled for the next use.
+	Clear()
 }
 
 // Uint64 is a map that stores uint64's and associated uint64 value.
@@ -84,6 +93,12 @@ type Uint64 interface {
 	Get(hash uint64) (uint64, bool)
 	Length() int
 	Put(hash, value uint64) error
+
+	// Freeze marks the map read-only; subsequent Put calls return ErrMapFrozen.
+	Freeze()
+
+	// Clear empties the map and un-freezes it for reuse.
+	Clear()
 }
 
 // TxHashMap is a map that stores transaction hashes without any associated value.
@@ -96,6 +111,12 @@ type TxHashMap interface {
 	Put(hash chainhash.Hash) error
 	PutMulti(hashes []chainhash.Hash) error
 	Iter(f func(hash chainhash.Hash, value uint64) bool)
+
+	// Freeze marks the map read-only; subsequent writes return ErrMapFrozen.
+	Freeze()
+
+	// Clear empties the map and un-freezes it for reuse.
+	Clear()
 }
 
 // SwissMap is a simple concurrent-safe map that uses the swiss package
@@ -103,6 +124,7 @@ type SwissMap struct {
 	mu     sync.RWMutex
 	m      *swiss.Map[chainhash.Hash, struct{}]
 	length int
+	frozen atomic.Bool
 }
 
 var (
@@ -114,6 +136,11 @@ var (
 
 	// ErrBucketDoesNotExist is when a bucket doesn't exist
 	ErrBucketDoesNotExist = errors.New("bucket does not exist")
+
+	// ErrMapFrozen is returned by write methods (Put, PutMulti, Set,
+	// SetIfExists, SetIfNotExists, Delete) once Freeze has been called on the
+	// map. Call Clear to un-freeze and reuse the map.
+	ErrMapFrozen = errors.New("map is frozen and cannot be modified")
 )
 
 const (
@@ -147,8 +174,10 @@ func NewSwissMap(length uint32) *SwissMap {
 // Returns:
 //   - bool: True if the hash exists in the map, false otherwise.
 func (s *SwissMap) Exists(hash chainhash.Hash) bool {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	if !s.frozen.Load() {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+	}
 
 	_, ok := s.m.Get(hash)
 
@@ -165,8 +194,10 @@ func (s *SwissMap) Exists(hash chainhash.Hash) bool {
 //   - uint64: Always returns 0, as this map does not store values.
 //   - bool: True if the hash was found in the map, false otherwise.
 func (s *SwissMap) Get(hash chainhash.Hash) (uint64, bool) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	if !s.frozen.Load() {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+	}
 
 	_, ok := s.m.Get(hash)
 
@@ -181,6 +212,10 @@ func (s *SwissMap) Get(hash chainhash.Hash) (uint64, bool) {
 // Returns:
 //   - error: always returns nil, as this map does not have any constraints on adding hashes.
 func (s *SwissMap) Put(hash chainhash.Hash) error {
+	if s.frozen.Load() {
+		return ErrMapFrozen
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -199,6 +234,10 @@ func (s *SwissMap) Put(hash chainhash.Hash) error {
 // Returns:
 //   - error: always returns nil, as this map does not have any constraints on adding hashes.
 func (s *SwissMap) PutMulti(hashes []chainhash.Hash) error {
+	if s.frozen.Load() {
+		return ErrMapFrozen
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -219,6 +258,10 @@ func (s *SwissMap) PutMulti(hashes []chainhash.Hash) error {
 // Returns:
 //   - error: always returns nil, as this map does not have any constraints on deleting hashes.
 func (s *SwissMap) Delete(hash chainhash.Hash) error {
+	if s.frozen.Load() {
+		return ErrMapFrozen
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -234,8 +277,10 @@ func (s *SwissMap) Delete(hash chainhash.Hash) error {
 // Returns:
 //   - int: The number of hashes currently stored in the map.
 func (s *SwissMap) Length() int {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	if !s.frozen.Load() {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+	}
 
 	return s.length
 }
@@ -249,6 +294,7 @@ func (s *SwissMap) Clear() {
 
 	s.m.Clear()
 	s.length = 0
+	s.frozen.Store(false)
 }
 
 // Keys returns a slice of all hashes currently stored in the map.
@@ -258,8 +304,10 @@ func (s *SwissMap) Clear() {
 // Returns:
 //   - []chainhash.Hash: A slice containing all the hashes in the map.
 func (s *SwissMap) Keys() []chainhash.Hash {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	if !s.frozen.Load() {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+	}
 
 	keys := make([]chainhash.Hash, 0, s.length)
 
@@ -282,8 +330,10 @@ func (s *SwissMap) Map() TxHashMap {
 // Params:
 //   - f: A function that takes a hash and its associated value (always 0 in this map).
 func (s *SwissMap) Iter(f func(hash chainhash.Hash, value uint64) bool) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	if !s.frozen.Load() {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+	}
 
 	s.m.Iter(func(k chainhash.Hash, _ struct{}) (stop bool) {
 		return f(k, 0)
@@ -299,6 +349,7 @@ type SwissMapUint64 struct {
 	mu     sync.RWMutex
 	m      *swiss.Map[chainhash.Hash, uint64]
 	length int
+	frozen atomic.Bool
 }
 
 // NewSwissMapUint64 creates a new SwissMapUint64 with the specified initial length.
@@ -333,8 +384,10 @@ func (s *SwissMapUint64) Map() *swiss.Map[chainhash.Hash, uint64] {
 // Returns:
 //   - bool: True if the hash exists in the map, false otherwise.
 func (s *SwissMapUint64) Exists(hash chainhash.Hash) bool {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	if !s.frozen.Load() {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+	}
 
 	_, ok := s.m.Get(hash)
 
@@ -352,6 +405,10 @@ func (s *SwissMapUint64) Exists(hash chainhash.Hash) bool {
 // Returns:
 //   - error: An error if the hash already exists in the map, nil otherwise.
 func (s *SwissMapUint64) Put(hash chainhash.Hash, n uint64) error {
+	if s.frozen.Load() {
+		return ErrMapFrozen
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -378,6 +435,10 @@ func (s *SwissMapUint64) Put(hash chainhash.Hash, n uint64) error {
 // Returns:
 //   - error: An error if any of the hashes already exist in the map, nil otherwise.
 func (s *SwissMapUint64) PutMulti(hashes []chainhash.Hash, n uint64) error {
+	if s.frozen.Load() {
+		return ErrMapFrozen
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -405,6 +466,10 @@ func (s *SwissMapUint64) PutMulti(hashes []chainhash.Hash, n uint64) error {
 // Returns:
 //   - error: An error if the hash does not exist in the map, nil otherwise.
 func (s *SwissMapUint64) Set(hash chainhash.Hash, value uint64) error {
+	if s.frozen.Load() {
+		return ErrMapFrozen
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -429,6 +494,10 @@ func (s *SwissMapUint64) Set(hash chainhash.Hash, value uint64) error {
 //   - bool: True if the hash was found and updated, false otherwise.
 //   - error: An error if there was an issue updating the hash, nil otherwise.
 func (s *SwissMapUint64) SetIfExists(hash chainhash.Hash, value uint64) (bool, error) {
+	if s.frozen.Load() {
+		return false, ErrMapFrozen
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -453,6 +522,10 @@ func (s *SwissMapUint64) SetIfExists(hash chainhash.Hash, value uint64) (bool, e
 //   - bool: True if the hash was added, false if it already existed.
 //   - error: An error if there was an issue adding the hash, nil otherwise.
 func (s *SwissMapUint64) SetIfNotExists(hash chainhash.Hash, value uint64) (bool, error) {
+	if s.frozen.Load() {
+		return false, ErrMapFrozen
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -478,8 +551,10 @@ func (s *SwissMapUint64) SetIfNotExists(hash chainhash.Hash, value uint64) (bool
 //   - uint64: The value associated with the hash, or 0 if the hash does not exist.
 //   - bool: True if the hash was found in the map, false otherwise.
 func (s *SwissMapUint64) Get(hash chainhash.Hash) (uint64, bool) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	if !s.frozen.Load() {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+	}
 
 	n, ok := s.m.Get(hash)
 	if !ok {
@@ -495,25 +570,32 @@ func (s *SwissMapUint64) Get(hash chainhash.Hash) (uint64, bool) {
 // Returns:
 //   - int: The number of hashes currently stored in the map.
 func (s *SwissMapUint64) Length() int {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	if !s.frozen.Load() {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+	}
 
 	return s.length
 }
 
 // Clear empties the map without releasing the underlying group/ctrl backing
-// storage. This is the operation a pool wants: reset state for the next user
-// while keeping the (often multi-GB) preallocation intact.
+// storage, and un-freezes it. This is the operation a pool wants: reset state
+// for the next user while keeping the (often multi-GB) preallocation intact.
 //
-// Safe for concurrent use — takes the write lock. Callers that are about to
-// return a SwissMapUint64 to a sync.Pool should call Clear immediately before
-// Put so the next Get receives a zero-length map.
+// Per the Freeze/Clear contract (see freeze.go), Clear must not run
+// concurrently with any other operation on the map: after Freeze, readers skip
+// the RWMutex, so a concurrent Clear would race their lock-free reads of the
+// underlying map. The write lock only orders Clear against other locked,
+// non-frozen operations. Callers returning a SwissMapUint64 to a sync.Pool
+// should call Clear immediately before Put so the next Get receives a
+// zero-length map.
 func (s *SwissMapUint64) Clear() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	s.m.Clear()
 	s.length = 0
+	s.frozen.Store(false)
 }
 
 // Keys returns a slice of all hashes currently stored in the map.
@@ -523,8 +605,10 @@ func (s *SwissMapUint64) Clear() {
 // Returns:
 //   - []chainhash.Hash: A slice containing all the hashes in the map.
 func (s *SwissMapUint64) Keys() []chainhash.Hash {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	if !s.frozen.Load() {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+	}
 
 	keys := make([]chainhash.Hash, 0, s.length)
 
@@ -542,8 +626,10 @@ func (s *SwissMapUint64) Keys() []chainhash.Hash {
 // Params:
 //   - f: A function that takes a hash and its associated uint64 value.
 func (s *SwissMapUint64) Iter(f func(hash chainhash.Hash, value uint64) bool) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	if !s.frozen.Load() {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+	}
 
 	s.m.Iter(func(k chainhash.Hash, v uint64) (stop bool) {
 		return f(k, v)
@@ -560,6 +646,10 @@ func (s *SwissMapUint64) Iter(f func(hash chainhash.Hash, value uint64) bool) {
 // Returns:
 //   - error: An error if the hash does not exist in the map, nil otherwise.
 func (s *SwissMapUint64) Delete(hash chainhash.Hash) error {
+	if s.frozen.Load() {
+		return ErrMapFrozen
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -578,6 +668,7 @@ func (s *SwissMapUint64) Delete(hash chainhash.Hash) error {
 type SwissLockFreeMapUint64 struct {
 	m      *swiss.Map[uint64, uint64]
 	length atomic.Uint32
+	frozen atomic.Bool
 }
 
 // NewSwissLockFreeMapUint64 creates a new SwissLockFreeMapUint64 with the specified initial length.
@@ -641,6 +732,10 @@ func (s *SwissLockFreeMapUint64) Exists(hash uint64) bool {
 //
 // Considerations: This method does not lock the map, so it is not suitable for concurrent access.
 func (s *SwissLockFreeMapUint64) Put(hash, n uint64) error {
+	if s.frozen.Load() {
+		return ErrMapFrozen
+	}
+
 	exists := s.m.Has(hash)
 	if exists {
 		return ErrHashAlreadyExists
