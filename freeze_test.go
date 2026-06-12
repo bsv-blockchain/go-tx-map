@@ -8,13 +8,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// hashN returns a deterministic chainhash.Hash derived from i. The first two
-// bytes carry i so that split maps (which bucket on the first two bytes)
-// distribute keys across buckets.
+// hashN returns a deterministic chainhash.Hash derived from i. i is stored
+// big-endian in the first two bytes to match Bytes2Uint16Buckets, which reads
+// b[0] as the high byte and b[1] as the low byte: bucket = (b[0]<<8 | b[1]) %
+// nrOfBuckets. So consecutive i map to bucket i%nrOfBuckets and spread evenly
+// across buckets, exercising split-bucket behaviour. Inputs in these tests stay
+// below 65536, so both bytes are exact.
 func hashN(i int) chainhash.Hash {
 	var h chainhash.Hash
-	h[0] = byte(i & 0xff)
-	h[1] = byte((i >> 8) & 0xff)
+	h[0] = byte((i >> 8) & 0xff)
+	h[1] = byte(i & 0xff)
 
 	return h
 }

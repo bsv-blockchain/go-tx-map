@@ -28,9 +28,19 @@ package txmap
 // phase). Freeze and Clear are not safe to call concurrently with other
 // operations on the same map.
 
-// Compile-time checks that every map type satisfies its interface, including
-// the Freeze/Clear methods now required by TxMap, TxHashMap and Uint64.
+// Compile-time checks that every concrete map type satisfies its interface,
+// including the Freeze/Clear methods now required by TxMap, TxHashMap and
+// Uint64. (The TxMap assertions are duplicated next to each type definition;
+// gathering all twelve here gives a single checklist that every implementation
+// gained the new methods.)
 var (
+	_ TxMap = (*SwissMapUint64)(nil)
+	_ TxMap = (*SplitSwissMap)(nil)
+	_ TxMap = (*SplitSwissMapUint64)(nil)
+	_ TxMap = (*NativeMapUint64)(nil)
+	_ TxMap = (*NativeSplitMap)(nil)
+	_ TxMap = (*NativeSplitMapUint64)(nil)
+
 	_ TxHashMap = (*SwissMap)(nil)
 	_ TxHashMap = (*NativeMap)(nil)
 
@@ -65,7 +75,9 @@ func (s *SwissLockFreeMapUint64) Clear() {
 func (s *NativeMap) Freeze() { s.frozen.Store(true) }
 
 // Clear empties the map (retaining its allocated capacity) and un-freezes it
-// for reuse. Safe for concurrent use — takes the write lock.
+// for reuse. Per the lifecycle contract above, Clear must not run concurrently
+// with other operations on the map (a frozen reader skips the lock that Clear
+// takes); the write lock only orders it against other locked, non-frozen ops.
 func (s *NativeMap) Clear() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -79,7 +91,9 @@ func (s *NativeMap) Clear() {
 func (s *NativeMapUint64) Freeze() { s.frozen.Store(true) }
 
 // Clear empties the map (retaining its allocated capacity) and un-freezes it
-// for reuse. Safe for concurrent use — takes the write lock.
+// for reuse. Per the lifecycle contract above, Clear must not run concurrently
+// with other operations on the map (a frozen reader skips the lock that Clear
+// takes); the write lock only orders it against other locked, non-frozen ops.
 func (s *NativeMapUint64) Clear() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
