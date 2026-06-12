@@ -23,6 +23,7 @@ type NativeMap struct {
 	mu     sync.RWMutex
 	m      map[chainhash.Hash]struct{}
 	length int
+	frozen atomic.Bool
 }
 
 // NewNativeMap creates a new NativeMap with the specified initial length.
@@ -56,8 +57,10 @@ func NewDefaultMap(length uint32) *NativeMap {
 // Returns:
 //   - bool: True if the hash exists in the map, false otherwise.
 func (s *NativeMap) Exists(hash chainhash.Hash) bool {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	if !s.frozen.Load() {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+	}
 
 	_, ok := s.m[hash]
 
@@ -74,8 +77,10 @@ func (s *NativeMap) Exists(hash chainhash.Hash) bool {
 //   - uint64: Always returns 0, as this map does not store values.
 //   - bool: True if the hash was found in the map, false otherwise.
 func (s *NativeMap) Get(hash chainhash.Hash) (uint64, bool) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	if !s.frozen.Load() {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+	}
 
 	_, ok := s.m[hash]
 
@@ -90,6 +95,10 @@ func (s *NativeMap) Get(hash chainhash.Hash) (uint64, bool) {
 // Returns:
 //   - error: always returns nil, as this map does not have any constraints on adding hashes.
 func (s *NativeMap) Put(hash chainhash.Hash) error {
+	if s.frozen.Load() {
+		return ErrMapFrozen
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -108,6 +117,10 @@ func (s *NativeMap) Put(hash chainhash.Hash) error {
 // Returns:
 //   - error: always returns nil, as this map does not have any constraints on adding hashes.
 func (s *NativeMap) PutMulti(hashes []chainhash.Hash) error {
+	if s.frozen.Load() {
+		return ErrMapFrozen
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -128,6 +141,10 @@ func (s *NativeMap) PutMulti(hashes []chainhash.Hash) error {
 // Returns:
 //   - error: always returns nil, as this map does not have any constraints on deleting hashes.
 func (s *NativeMap) Delete(hash chainhash.Hash) error {
+	if s.frozen.Load() {
+		return ErrMapFrozen
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -143,8 +160,10 @@ func (s *NativeMap) Delete(hash chainhash.Hash) error {
 // Returns:
 //   - int: The number of hashes currently stored in the map.
 func (s *NativeMap) Length() int {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	if !s.frozen.Load() {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+	}
 
 	return s.length
 }
@@ -156,8 +175,10 @@ func (s *NativeMap) Length() int {
 // Returns:
 //   - []chainhash.Hash: A slice containing all the hashes in the map.
 func (s *NativeMap) Keys() []chainhash.Hash {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	if !s.frozen.Load() {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+	}
 
 	keys := make([]chainhash.Hash, 0, s.length)
 
@@ -179,8 +200,10 @@ func (s *NativeMap) Map() TxHashMap {
 // Params:
 //   - f: A function that takes a hash and its associated value (always 0 in this map).
 func (s *NativeMap) Iter(f func(hash chainhash.Hash, value uint64) bool) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	if !s.frozen.Load() {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+	}
 
 	for k := range s.m {
 		if f(k, 0) {
@@ -202,6 +225,7 @@ type NativeMapUint64 struct {
 	mu     sync.RWMutex
 	m      map[chainhash.Hash]uint64
 	length int
+	frozen atomic.Bool
 }
 
 // NewNativeMapUint64 creates a new NativeMapUint64 with the specified initial length.
@@ -242,8 +266,10 @@ func (s *NativeMapUint64) Map() map[chainhash.Hash]uint64 {
 // Returns:
 //   - bool: True if the hash exists in the map, false otherwise.
 func (s *NativeMapUint64) Exists(hash chainhash.Hash) bool {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	if !s.frozen.Load() {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+	}
 
 	_, ok := s.m[hash]
 
@@ -261,6 +287,10 @@ func (s *NativeMapUint64) Exists(hash chainhash.Hash) bool {
 // Returns:
 //   - error: An error if the hash already exists in the map, nil otherwise.
 func (s *NativeMapUint64) Put(hash chainhash.Hash, n uint64) error {
+	if s.frozen.Load() {
+		return ErrMapFrozen
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -287,6 +317,10 @@ func (s *NativeMapUint64) Put(hash chainhash.Hash, n uint64) error {
 // Returns:
 //   - error: An error if any of the hashes already exist in the map, nil otherwise.
 func (s *NativeMapUint64) PutMulti(hashes []chainhash.Hash, n uint64) error {
+	if s.frozen.Load() {
+		return ErrMapFrozen
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -314,6 +348,10 @@ func (s *NativeMapUint64) PutMulti(hashes []chainhash.Hash, n uint64) error {
 // Returns:
 //   - error: An error if the hash does not exist in the map, nil otherwise.
 func (s *NativeMapUint64) Set(hash chainhash.Hash, value uint64) error {
+	if s.frozen.Load() {
+		return ErrMapFrozen
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -339,6 +377,10 @@ func (s *NativeMapUint64) Set(hash chainhash.Hash, value uint64) error {
 //   - bool: True if the hash was found and updated, false otherwise.
 //   - error: An error if there was an issue updating the hash, nil otherwise.
 func (s *NativeMapUint64) SetIfExists(hash chainhash.Hash, value uint64) (bool, error) {
+	if s.frozen.Load() {
+		return false, ErrMapFrozen
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -364,6 +406,10 @@ func (s *NativeMapUint64) SetIfExists(hash chainhash.Hash, value uint64) (bool, 
 //   - bool: True if the hash was added, false if it already existed.
 //   - error: An error if there was an issue adding the hash, nil otherwise.
 func (s *NativeMapUint64) SetIfNotExists(hash chainhash.Hash, value uint64) (bool, error) {
+	if s.frozen.Load() {
+		return false, ErrMapFrozen
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -390,8 +436,10 @@ func (s *NativeMapUint64) SetIfNotExists(hash chainhash.Hash, value uint64) (boo
 //   - uint64: The value associated with the hash, or 0 if the hash does not exist.
 //   - bool: True if the hash was found in the map, false otherwise.
 func (s *NativeMapUint64) Get(hash chainhash.Hash) (uint64, bool) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	if !s.frozen.Load() {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+	}
 
 	n, ok := s.m[hash]
 	if !ok {
@@ -407,8 +455,10 @@ func (s *NativeMapUint64) Get(hash chainhash.Hash) (uint64, bool) {
 // Returns:
 //   - int: The number of hashes currently stored in the map.
 func (s *NativeMapUint64) Length() int {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	if !s.frozen.Load() {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+	}
 
 	return s.length
 }
@@ -420,8 +470,10 @@ func (s *NativeMapUint64) Length() int {
 // Returns:
 //   - []chainhash.Hash: A slice containing all the hashes in the map.
 func (s *NativeMapUint64) Keys() []chainhash.Hash {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	if !s.frozen.Load() {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+	}
 
 	keys := make([]chainhash.Hash, 0, s.length)
 
@@ -438,8 +490,10 @@ func (s *NativeMapUint64) Keys() []chainhash.Hash {
 // Params:
 //   - f: A function that takes a hash and its associated uint64 value.
 func (s *NativeMapUint64) Iter(f func(hash chainhash.Hash, value uint64) bool) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	if !s.frozen.Load() {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+	}
 
 	for k, v := range s.m {
 		if f(k, v) {
@@ -458,6 +512,10 @@ func (s *NativeMapUint64) Iter(f func(hash chainhash.Hash, value uint64) bool) {
 // Returns:
 //   - error: An error if the hash does not exist in the map, nil otherwise.
 func (s *NativeMapUint64) Delete(hash chainhash.Hash) error {
+	if s.frozen.Load() {
+		return ErrMapFrozen
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -481,6 +539,7 @@ type LockFreeMapUint64 = NativeLockFreeMapUint64
 type NativeLockFreeMapUint64 struct {
 	m      map[uint64]uint64
 	length atomic.Uint32
+	frozen atomic.Bool
 }
 
 // NewNativeLockFreeMapUint64 creates a new NativeLockFreeMapUint64 with the specified initial length.
@@ -554,6 +613,10 @@ func (s *NativeLockFreeMapUint64) Exists(hash uint64) bool {
 //
 // Considerations: This method does not lock the map, so it is not suitable for concurrent access.
 func (s *NativeLockFreeMapUint64) Put(hash, n uint64) error {
+	if s.frozen.Load() {
+		return ErrMapFrozen
+	}
+
 	_, exists := s.m[hash]
 	if exists {
 		return ErrHashAlreadyExists
