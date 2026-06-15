@@ -2,6 +2,7 @@ package txmap
 
 import (
 	"sync"
+	"sync/atomic"
 
 	"github.com/dolthub/swiss"
 )
@@ -9,9 +10,10 @@ import (
 // SyncedMap is a thread-safe generic map with read-write mutex synchronization.
 // It supports concurrent access and provides an optional item limit for constrained storage.
 type SyncedMap[K comparable, V any] struct {
-	mu    sync.RWMutex
-	m     map[K]V
-	limit int
+	mu     sync.RWMutex
+	m      map[K]V
+	limit  int
+	frozen atomic.Bool
 }
 
 // NewSyncedMap creates and returns a new SyncedMap with an optional item limit.
@@ -35,13 +37,23 @@ func NewSyncedMap[K comparable, V any](l ...int) *SyncedMap[K, V] {
 	}
 }
 
+// Freeze marks the map read-only. After Freeze, read methods skip the RWMutex
+// (eliminating reader-counter cache-line contention under heavy concurrent reads).
+// Write methods (Set, SetIfNotExists, SetMulti, SetIfNotExistsMulti, Delete) panic
+// rather than silently mutating a map that concurrent readers assume is immutable.
+// Call Clear to empty the map and un-freeze it for reuse.
+// See the lifecycle notes at the top of freeze.go.
+func (m *SyncedMap[K, V]) Freeze() { m.frozen.Store(true) }
+
 // Length returns the number of key-value pairs currently stored in the SyncedMap.
 //
 // Returns:
 //   - int: The number of items in the map.
 func (m *SyncedMap[K, V]) Length() int {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
+	if !m.frozen.Load() {
+		m.mu.RLock()
+		defer m.mu.RUnlock()
+	}
 
 	return len(m.m)
 }
@@ -54,8 +66,10 @@ func (m *SyncedMap[K, V]) Length() int {
 // Returns:
 //   - bool: True if the key exists, false otherwise.
 func (m *SyncedMap[K, V]) Exists(key K) bool {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
+	if !m.frozen.Load() {
+		m.mu.RLock()
+		defer m.mu.RUnlock()
+	}
 
 	_, ok := m.m[key]
 
@@ -71,8 +85,10 @@ func (m *SyncedMap[K, V]) Exists(key K) bool {
 //   - V: The value associated with the key (zero value if not found).
 //   - bool: True if the key exists, false otherwise.
 func (m *SyncedMap[K, V]) Get(key K) (V, bool) {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
+	if !m.frozen.Load() {
+		m.mu.RLock()
+		defer m.mu.RUnlock()
+	}
 
 	val, ok := m.m[key]
 
@@ -84,8 +100,10 @@ func (m *SyncedMap[K, V]) Get(key K) (V, bool) {
 // Returns:
 //   - map[K]V: A copy of the map's key-value pairs.
 func (m *SyncedMap[K, V]) Range() map[K]V {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
+	if !m.frozen.Load() {
+		m.mu.RLock()
+		defer m.mu.RUnlock()
+	}
 
 	items := make(map[K]V, len(m.m))
 
@@ -101,8 +119,10 @@ func (m *SyncedMap[K, V]) Range() map[K]V {
 // Returns:
 //   - []K: A slice containing all keys in the map.
 func (m *SyncedMap[K, V]) Keys() []K {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
+	if !m.frozen.Load() {
+		m.mu.RLock()
+		defer m.mu.RUnlock()
+	}
 
 	keys := make([]K, 0, len(m.m))
 
@@ -119,8 +139,10 @@ func (m *SyncedMap[K, V]) Keys() []K {
 // Parameters:
 //   - f: A function that takes a key and value, and returns a bool indicating whether to continue iteration.
 func (m *SyncedMap[K, V]) Iterate(f func(key K, value V) bool) {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
+	if !m.frozen.Load() {
+		m.mu.RLock()
+		defer m.mu.RUnlock()
+	}
 
 	for k, v := range m.m {
 		if !f(k, v) {
@@ -130,11 +152,16 @@ func (m *SyncedMap[K, V]) Iterate(f func(key K, value V) bool) {
 }
 
 // Set sets the value for the given key in the SyncedMap.
+// Panics if the map is frozen.
 //
 // Parameters:
 //   - key: The key to set.
 //   - value: The value to associate with the key.
 func (m *SyncedMap[K, V]) Set(key K, value V) {
+	if m.frozen.Load() {
+		panic("txmap: write to frozen SyncedMap")
+	}
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -142,6 +169,7 @@ func (m *SyncedMap[K, V]) Set(key K, value V) {
 }
 
 // SetIfNotExists sets the value for the key if it does not already exist in the SyncedMap.
+// Panics if the map is frozen.
 //
 // Parameters:
 //   - key: The key to set the value for.
@@ -151,6 +179,10 @@ func (m *SyncedMap[K, V]) Set(key K, value V) {
 //   - V: The value that was set or already existed.
 //   - bool: True if the value was set, false if the key already existed.
 func (m *SyncedMap[K, V]) SetIfNotExists(key K, value V) (V, bool) {
+	if m.frozen.Load() {
+		panic("txmap: write to frozen SyncedMap")
+	}
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -176,11 +208,16 @@ func (m *SyncedMap[K, V]) setUnlocked(key K, value V) {
 }
 
 // SetMulti sets the given value for multiple keys in the SyncedMap.
+// Panics if the map is frozen.
 //
 // Parameters:
 //   - keys: A slice of keys to set.
 //   - value: The value to associate with each key.
 func (m *SyncedMap[K, V]) SetMulti(keys []K, value V) {
+	if m.frozen.Load() {
+		panic("txmap: write to frozen SyncedMap")
+	}
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -193,6 +230,7 @@ func (m *SyncedMap[K, V]) SetMulti(keys []K, value V) {
 // SetIfNotExistsMulti inserts each keys[i] -> values[i] pair under a single
 // write-lock acquisition. Matches SetIfNotExists semantics per element: if a
 // key already exists in the map its value is left unchanged.
+// Panics if the map is frozen.
 //
 // Parameters:
 //   - keys: A slice of keys to insert.
@@ -208,6 +246,10 @@ func (m *SyncedMap[K, V]) SetMulti(keys []K, value V) {
 // goroutine; eliminates the per-element Lock/Unlock overhead of calling
 // SetIfNotExists in a loop.
 func (m *SyncedMap[K, V]) SetIfNotExistsMulti(keys []K, values []V) []bool {
+	if m.frozen.Load() {
+		panic("txmap: write to frozen SyncedMap")
+	}
+
 	n := len(keys)
 	if len(values) < n {
 		n = len(values)
@@ -231,6 +273,7 @@ func (m *SyncedMap[K, V]) SetIfNotExistsMulti(keys []K, values []V) []bool {
 }
 
 // Delete removes the key and its value from the SyncedMap.
+// Panics if the map is frozen.
 //
 // Parameters:
 //   - key: The key to delete.
@@ -238,6 +281,10 @@ func (m *SyncedMap[K, V]) SetIfNotExistsMulti(keys []K, values []V) []bool {
 // Returns:
 //   - bool: True if the key was deleted, false otherwise.
 func (m *SyncedMap[K, V]) Delete(key K) bool {
+	if m.frozen.Load() {
+		panic("txmap: write to frozen SyncedMap")
+	}
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -246,7 +293,11 @@ func (m *SyncedMap[K, V]) Delete(key K) bool {
 	return true
 }
 
-// Clear removes all key-value pairs from the SyncedMap.
+// Clear removes all key-value pairs from the SyncedMap and un-freezes it for
+// reuse. Per the lifecycle contract (see freeze.go), Clear must not run
+// concurrently with any other operation on the map: after Freeze, readers skip
+// the RWMutex, so a concurrent Clear would race their lock-free reads. The
+// write lock only orders Clear against other locked, non-frozen operations.
 //
 // Returns:
 //   - bool: True if the map was cleared successfully.
@@ -255,6 +306,7 @@ func (m *SyncedMap[K, V]) Clear() bool {
 	defer m.mu.Unlock()
 
 	m.m = make(map[K]V)
+	m.frozen.Store(false)
 
 	return true
 }
@@ -377,6 +429,7 @@ func (s *SyncedSlice[V]) Shift() (*V, bool) {
 type SyncedSwissMap[K comparable, V any] struct {
 	mu       sync.RWMutex
 	swissMap *swiss.Map[K, V]
+	frozen   atomic.Bool
 }
 
 // NewSyncedSwissMap creates and returns a new SyncedSwissMap with the specified initial capacity.
@@ -392,6 +445,14 @@ func NewSyncedSwissMap[K comparable, V any](length uint32) *SyncedSwissMap[K, V]
 	}
 }
 
+// Freeze marks the map read-only. After Freeze, read methods skip the RWMutex
+// (eliminating reader-counter cache-line contention under heavy concurrent reads).
+// Write methods (Set, Delete, DeleteBatch) panic rather than silently mutating a
+// map that concurrent readers assume is immutable.
+// Call Clear to empty the map and un-freeze it for reuse.
+// See the lifecycle notes at the top of freeze.go.
+func (m *SyncedSwissMap[K, V]) Freeze() { m.frozen.Store(true) }
+
 // Get returns the value associated with the given key in the SyncedSwissMap.
 //
 // Parameters:
@@ -401,8 +462,10 @@ func NewSyncedSwissMap[K comparable, V any](length uint32) *SyncedSwissMap[K, V]
 //   - V: The value associated with the key (zero value if not found).
 //   - bool: True if the key exists, false otherwise.
 func (m *SyncedSwissMap[K, V]) Get(key K) (V, bool) {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
+	if !m.frozen.Load() {
+		m.mu.RLock()
+		defer m.mu.RUnlock()
+	}
 
 	return m.swissMap.Get(key)
 }
@@ -412,8 +475,10 @@ func (m *SyncedSwissMap[K, V]) Get(key K) (V, bool) {
 // Returns:
 //   - map[K]V: A copy of the map's key-value pairs.
 func (m *SyncedSwissMap[K, V]) Range() map[K]V {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
+	if !m.frozen.Load() {
+		m.mu.RLock()
+		defer m.mu.RUnlock()
+	}
 
 	items := map[K]V{}
 
@@ -426,11 +491,16 @@ func (m *SyncedSwissMap[K, V]) Range() map[K]V {
 }
 
 // Set sets the value for the given key in the SyncedSwissMap.
+// Panics if the map is frozen.
 //
 // Parameters:
 //   - key: The key to set.
 //   - value: The value to associate with the key.
 func (m *SyncedSwissMap[K, V]) Set(key K, value V) {
+	if m.frozen.Load() {
+		panic("txmap: write to frozen SyncedSwissMap")
+	}
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -442,13 +512,16 @@ func (m *SyncedSwissMap[K, V]) Set(key K, value V) {
 // Returns:
 //   - int: The number of items in the map.
 func (m *SyncedSwissMap[K, V]) Length() int {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
+	if !m.frozen.Load() {
+		m.mu.RLock()
+		defer m.mu.RUnlock()
+	}
 
 	return m.swissMap.Count()
 }
 
 // Delete removes the key and its value from the SyncedSwissMap.
+// Panics if the map is frozen.
 //
 // Parameters:
 //   - key: The key to delete.
@@ -456,6 +529,10 @@ func (m *SyncedSwissMap[K, V]) Length() int {
 // Returns:
 //   - bool: True if the key was deleted, false otherwise.
 func (m *SyncedSwissMap[K, V]) Delete(key K) bool {
+	if m.frozen.Load() {
+		panic("txmap: write to frozen SyncedSwissMap")
+	}
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -463,6 +540,7 @@ func (m *SyncedSwissMap[K, V]) Delete(key K) bool {
 }
 
 // DeleteBatch removes multiple keys and their values from the SyncedSwissMap.
+// Panics if the map is frozen.
 //
 // Parameters:
 //   - keys: A slice of keys to delete.
@@ -470,6 +548,10 @@ func (m *SyncedSwissMap[K, V]) Delete(key K) bool {
 // Returns:
 //   - bool: True if at least one key was deleted, false otherwise.
 func (m *SyncedSwissMap[K, V]) DeleteBatch(keys []K) bool {
+	if m.frozen.Load() {
+		panic("txmap: write to frozen SyncedSwissMap")
+	}
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -480,4 +562,18 @@ func (m *SyncedSwissMap[K, V]) DeleteBatch(keys []K) bool {
 	}
 
 	return ok
+}
+
+// Clear empties the map without releasing the underlying backing storage and
+// un-freezes it for reuse. Per the lifecycle contract (see freeze.go), Clear
+// must not run concurrently with any other operation on the map: after Freeze,
+// readers skip the RWMutex, so a concurrent Clear would race their lock-free
+// reads. The write lock only orders Clear against other locked, non-frozen
+// operations.
+func (m *SyncedSwissMap[K, V]) Clear() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	m.swissMap.Clear()
+	m.frozen.Store(false)
 }
