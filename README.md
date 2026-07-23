@@ -25,7 +25,6 @@
        &nbsp;&nbsp;&nbsp;&nbsp; <code>Quality</code> &nbsp;&nbsp;
     </td>
     <td align="left">
-       <a href="https://goreportcard.com/report/github.com/bsv-blockchain/go-tx-map"><img src="https://goreportcard.com/badge/github.com/bsv-blockchain/go-tx-map?style=flat-square" alt="Go Report"></a>
        <a href="https://codecov.io/gh/bsv-blockchain/go-tx-map"><img src="https://codecov.io/gh/bsv-blockchain/go-tx-map/branch/master/graph/badge.svg?style=flat-square" alt="Coverage"></a>
     </td>
   </tr>
