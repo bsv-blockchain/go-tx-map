@@ -1,9 +1,9 @@
 module github.com/bsv-blockchain/go-tx-map
 
-go 1.25.0
+go 1.26.0
 
 require (
-	github.com/bsv-blockchain/go-bt/v2 v2.6.9
+	github.com/bsv-blockchain/go-bt/v2 v2.7.1
 	github.com/dolthub/swiss v0.2.1
 	github.com/stretchr/testify v1.12.1
 )
