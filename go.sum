@@ -1,5 +1,5 @@
-github.com/bsv-blockchain/go-bt/v2 v2.7.3 h1:nTbbC3m1qup9YnCNiG677unG2RGppNhBfzdDl+e1xe4=
-github.com/bsv-blockchain/go-bt/v2 v2.7.3/go.mod h1:B4xn7g3m7YaPrXzWmvnCg5xiYdR56Beu/eOjFm78LCw=
+github.com/bsv-blockchain/go-bt/v2 v2.7.4 h1:n2cv7uMXpCHB0so+acLoqbBo4Nk/G2IRq+IxHbyoRN8=
+github.com/bsv-blockchain/go-bt/v2 v2.7.4/go.mod h1:FpGySPAZ0c4dR4Cfal1LEWOCVN6daPQbGcqeQkXInqw=
 github.com/dolthub/maphash v0.1.0 h1:bsQ7JsF4FkkWyrP3oCnFJgrCUAFbFf3kOl4L/QxPDyQ=
 github.com/dolthub/maphash v0.1.0/go.mod h1:gkg4Ch4CdCDu5h6PMriVLawB7koZ+5ijb9puGMV50a4=
 github.com/dolthub/swiss v0.2.1 h1:gs2osYs5SJkAaH5/ggVJqXQxRXtWshF6uE0lgR/Y3Gw=
