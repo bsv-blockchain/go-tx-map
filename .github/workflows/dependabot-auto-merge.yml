@@ -510,10 +510,14 @@ jobs:
                   echo "  🎯 MATCH! Action: $ACTION"
                   echo "  📝 Reason: Production patch of a same-owner (first-party) dependency"
                 else
-                  echo "  ❌ Not eligible for same-owner auto-merge (SAME_OWNER=$SAME_OWNER, AUTO_MERGE_PATCH_SAME_OWNER=${{ env.AUTO_MERGE_PATCH_SAME_OWNER }})"
+                  echo "  ❌ Not eligible for same-owner auto-merge (SAME_OWNER=$SAME_OWNER, AUTO_MERGE_PATCH_SAME_OWNER=${{ env.AUTO_MERGE_PATCH_SAME_OWNER }}, AUTO_MERGE_PATCH=${{ env.AUTO_MERGE_PATCH }})"
                   ACTION="manual-review"
                   echo "  🎯 MATCH! Action: $ACTION"
-                  echo "  📝 Reason: Third-party production patch requires manual review (supply-chain safety)"
+                  if [[ "$SAME_OWNER" == "true" ]]; then
+                    echo "  📝 Reason: Same-owner production patch, but same-owner/patch auto-merge is disabled in configuration"
+                  else
+                    echo "  📝 Reason: Third-party production patch requires manual review (supply-chain safety)"
+                  fi
                 fi
               elif [[ "$DEP_TYPE" != "indirect" ]]; then
                 echo "  ✅ DEP_TYPE is direct:development"
