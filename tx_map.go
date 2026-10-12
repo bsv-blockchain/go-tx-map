@@ -1017,8 +1017,13 @@ func (g *SplitSwissMap) Map() *SwissMapUint64 {
 // Params:
 //   - f: A function that takes a hash and its associated uint64 value.
 func (g *SplitSwissMap) Iter(f func(hash chainhash.Hash, value uint64) bool) {
-	for i := uint16(0); i <= g.nrOfBuckets; i++ {
-		g.m[i].Iter(f)
+	stopped := false
+
+	for i := uint16(0); i <= g.nrOfBuckets && !stopped; i++ {
+		g.m[i].Iter(func(hash chainhash.Hash, value uint64) bool {
+			stopped = f(hash, value)
+			return stopped
+		})
 	}
 }
 
@@ -1185,8 +1190,13 @@ func (g *SplitSwissMapUint64) Get(hash chainhash.Hash) (uint64, bool) {
 // Params:
 //   - f: A function that takes a hash and its associated uint64 value.
 func (g *SplitSwissMapUint64) Iter(f func(hash chainhash.Hash, value uint64) bool) {
-	for i := uint16(0); i <= g.nrOfBuckets; i++ {
-		g.m[i].Iter(f)
+	stopped := false
+
+	for i := uint16(0); i <= g.nrOfBuckets && !stopped; i++ {
+		g.m[i].Iter(func(hash chainhash.Hash, value uint64) bool {
+			stopped = f(hash, value)
+			return stopped
+		})
 	}
 }
 
@@ -1367,9 +1377,12 @@ func (g *SplitSwissLockFreeMapUint64) Length() int {
 
 // IterAll iterates over all key-value pairs across all buckets. Stops if f returns true.
 func (g *SplitSwissLockFreeMapUint64) IterAll(f func(k, v uint64) (stop bool)) {
-	for i := uint64(0); i <= g.nrOfBuckets; i++ {
+	stopped := false
+
+	for i := uint64(0); i <= g.nrOfBuckets && !stopped; i++ {
 		g.m[i].Iter(func(k, v uint64) (stop bool) {
-			return f(k, v)
+			stopped = f(k, v)
+			return stopped
 		})
 	}
 }
