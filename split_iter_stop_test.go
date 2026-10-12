@@ -67,6 +67,9 @@ func checkHashSplitIter(t *testing.T, m hashIterMap) {
 			})
 
 			require.Equal(t, k, visits)
+
+			// a lock left held by the early stop would block this write
+			require.NoError(t, m.Put(splitIterHash(splitIterEntries+uint64(k)), 0)) //nolint:gosec // small test counts
 		})
 	}
 }
@@ -103,6 +106,9 @@ func checkUint64SplitIter(t *testing.T, m uint64IterMap) {
 			})
 
 			require.Equal(t, k, visits)
+
+			// a lock left held by the early stop would block this write
+			require.NoError(t, m.Put(splitIterEntries+uint64(k), 0)) //nolint:gosec // small test counts
 		})
 	}
 }

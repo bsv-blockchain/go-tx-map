@@ -75,6 +75,8 @@ type TxMap interface {
 	Set(hash chainhash.Hash, value uint64) error
 	SetIfExists(hash chainhash.Hash, value uint64) (bool, error)
 	SetIfNotExists(hash chainhash.Hash, value uint64) (bool, error)
+	// Iter calls f for every entry until f returns true (stop). This is the
+	// opposite of SyncedMap.Iterate, where true means continue.
 	Iter(f func(hash chainhash.Hash, value uint64) bool)
 
 	// Freeze marks the map read-only. After Freeze, read methods skip locking
@@ -110,6 +112,7 @@ type TxHashMap interface {
 	Length() int
 	Put(hash chainhash.Hash) error
 	PutMulti(hashes []chainhash.Hash) error
+	// Iter calls f for every entry until f returns true (stop), as TxMap.Iter.
 	Iter(f func(hash chainhash.Hash, value uint64) bool)
 
 	// Freeze marks the map read-only; subsequent writes return ErrMapFrozen.

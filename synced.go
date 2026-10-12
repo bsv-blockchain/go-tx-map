@@ -134,7 +134,8 @@ func (m *SyncedMap[K, V]) Keys() []K {
 }
 
 // Iterate calls the provided function for each key-value pair in the SyncedMap.
-// The iteration stops if the function returns false.
+// The iteration stops if the function returns false: the opposite of the TxMap
+// Iter methods, where true means stop.
 //
 // Parameters:
 //   - f: A function that takes a key and value, and returns a bool indicating whether to continue iteration.
