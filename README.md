@@ -8,7 +8,7 @@
 
 <a href="https://github.com/bsv-blockchain/go-tx-map/releases"><img src="https://img.shields.io/github/release-pre/bsv-blockchain/go-tx-map?include_prereleases&style=flat-square&logo=github&color=black" alt="Release"></a>
 <a href="https://golang.org/"><img src="https://img.shields.io/github/go-mod/go-version/bsv-blockchain/go-tx-map?style=flat-square&logo=go&color=00ADD8" alt="Go Version"></a>
-<a href="https://github.com/bsv-blockchain/go-tx-map/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-OpenBSV-blue?style=flat-square" alt="License"></a>
+<a href="https://github.com/bsv-blockchain/go-tx-map/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue?style=flat-square" alt="License"></a>
 
 <br/>
 
@@ -294,4 +294,4 @@ The most basic way to show your support is to star :star2: the project, or to ra
 
 ## 📝 License
 
-[![License](https://img.shields.io/badge/license-OpenBSV-blue?style=flat-square)](LICENSE)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue?style=flat-square)](LICENSE)
